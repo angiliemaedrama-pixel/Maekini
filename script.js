@@ -31,7 +31,7 @@ const SUPABASE_CLIENT =
 // Put the product image inside the matching numbered folder.
 // No product-card HTML or image filename needs to be edited.
 // ---------------------------------------------------------
-const PRODUCTS = [
+let PRODUCTS = [
     {
         id: 1,
         name: "Long Sleeve Floral Rash Guard Set",
@@ -640,6 +640,7 @@ const reviewContext = document.getElementById("reviewContext");
 const profileName = document.getElementById("profileName");
 const profileEmail = document.getElementById("profileEmail");
 const avatar = document.getElementById("avatar");
+const ownerAdminLink = document.getElementById("ownerAdminLink");
 const logoutBtn = document.getElementById("logoutBtn");
 const navCart = document.getElementById("navCart");
 const productModal = document.getElementById("productModal");
@@ -765,7 +766,9 @@ function peso(number) {
 function save() {
     localStorage.setItem("mk_cart", JSON.stringify(S.cart));
     localStorage.setItem("mk_fav", JSON.stringify(S.favorites));
-    localStorage.setItem("mk_orders", JSON.stringify(S.orders));
+    if (!S.user) {
+        localStorage.setItem("mk_orders", JSON.stringify(S.orders));
+    }
     localStorage.setItem("mk_reviews", JSON.stringify(S.reviews));
     localStorage.setItem("mk_user", JSON.stringify(S.user));
 }
@@ -897,6 +900,47 @@ function renderHome() {
     ig.href = STORE_INFO.socials.instagram;
     li.href = STORE_INFO.socials.linkedin;
     tw.href = STORE_INFO.socials.twitter;
+}
+
+async function loadStoreData() {
+    if (!SUPABASE_CLIENT) {
+        return;
+    }
+
+    const [{ data: products, error: productsError }, { data: settings, error: settingsError }] =
+        await Promise.all([
+            SUPABASE_CLIENT
+                .from("store_products")
+                .select("id, name, category, price, rating, sold, tag, image_url")
+                .eq("is_active", true)
+                .order("id"),
+            SUPABASE_CLIENT
+                .from("store_settings")
+                .select("value")
+                .eq("key", "social_links")
+                .maybeSingle()
+        ]);
+
+    if (productsError) {
+        console.error("Could not load the cloud product catalog:", productsError);
+    } else if (products?.length) {
+        PRODUCTS = products.map((product) => ({
+            ...product,
+            id: Number(product.id),
+            price: Number(product.price),
+            rating: Number(product.rating),
+            sold: Number(product.sold)
+        }));
+        productImages = Object.fromEntries(
+            PRODUCTS.map((product) => [product.id, product.image_url])
+        );
+    }
+
+    if (settingsError) {
+        console.error("Could not load store links:", settingsError);
+    } else if (settings?.value && typeof settings.value === "object") {
+        STORE_INFO.socials = { ...STORE_INFO.socials, ...settings.value };
+    }
 }
 
 function productGroup(product) {
@@ -1171,6 +1215,12 @@ function renderFav() {
 // 12. CHECKOUT
 // ---------------------------------------------------------
 function renderCheckout() {
+    if (!S.user) {
+        toast("Sign in to place an order so you can track it.");
+        showAuth("login");
+        return;
+    }
+
     if (!S.cart.length) {
         view("cart");
         return;
@@ -1205,7 +1255,7 @@ function renderCheckout() {
     }
 }
 
-function placeOrder(event) {
+async function placeOrder(event) {
     event.preventDefault();
 
     const selectedPayment = document.querySelector(
@@ -1217,26 +1267,33 @@ function placeOrder(event) {
         return;
     }
 
-    const cartTotals = totals();
+    try {
+        if (!SUPABASE_CLIENT || !S.user?.id) {
+            throw new Error("Sign in again before placing your order.");
+        }
 
-    const order = {
-        id: "MK" + Date.now().toString().slice(-8),
-        created: new Date().toLocaleString(),
-        status: "Preparing for Ship",
-        payment: selectedPayment.value,
-        total: cartTotals.total,
-        items: structuredClone(S.cart)
-    };
+        const { error } = await SUPABASE_CLIENT.rpc("place_store_order", {
+            p_customer_name: custName.value.trim(),
+            p_phone: custPhone.value.trim(),
+            p_shipping_address: custAddress.value.trim(),
+            p_payment_method: selectedPayment.value,
+            p_items: S.cart.map(({ id, qty }) => ({ id, qty }))
+        });
 
-    S.orders.unshift(order);
-    S.cart = [];
+        if (error) {
+            throw error;
+        }
 
-    save();
-    counts();
-    checkoutForm.reset();
-
-    toast("Order placed successfully");
-    view("alerts");
+        S.cart = [];
+        save();
+        await loadCustomerOrders();
+        counts();
+        checkoutForm.reset();
+        toast("Order placed successfully.");
+        view("alerts");
+    } catch (error) {
+        toast(error instanceof Error ? error.message : "Could not place your order.");
+    }
 }
 
 // ---------------------------------------------------------
@@ -1293,12 +1350,17 @@ function track(status) {
     `;
 }
 
-function updateStatus(orderId, newStatus) {
+async function updateStatus(orderId, newStatus) {
     const order = S.orders.find((item) => {
         return item.id === orderId;
     });
 
     if (order) {
+        if (order.cloud) {
+            toast("Only the store owner can update cloud order status.");
+            return;
+        }
+
         order.status = newStatus;
 
         save();
@@ -1317,51 +1379,53 @@ function renderOrders() {
         .map((order) => {
             let actionButtons = "";
 
-            if (order.status === "Preparing for Ship") {
-                actionButtons += `
-                    <button
-                        onclick="updateStatus('${order.id}', 'In Transit')"
-                    >
-                        Demo: Mark In Transit
-                    </button>
-                `;
-            }
+            if (!order.cloud) {
+                if (order.status === "Preparing for Ship") {
+                    actionButtons += `
+                        <button
+                            onclick="updateStatus('${order.id}', 'In Transit')"
+                        >
+                            Demo: Mark In Transit
+                        </button>
+                    `;
+                }
 
-            if (order.status === "In Transit") {
-                actionButtons += `
-                    <button
-                        onclick="updateStatus('${order.id}', 'Delivered')"
-                    >
-                        Demo: Mark Delivered
-                    </button>
-                `;
-            }
+                if (order.status === "In Transit") {
+                    actionButtons += `
+                        <button
+                            onclick="updateStatus('${order.id}', 'Delivered')"
+                        >
+                            Demo: Mark Delivered
+                        </button>
+                    `;
+                }
 
-            if (
-                order.status === "Preparing for Ship" ||
-                order.status === "In Transit"
-            ) {
-                actionButtons += `
-                    <button
-                        class="light"
-                        onclick="updateStatus('${order.id}', 'Cancelled')"
-                    >
-                        Cancel Order
-                    </button>
-                `;
+                if (
+                    order.status === "Preparing for Ship" ||
+                    order.status === "In Transit"
+                ) {
+                    actionButtons += `
+                        <button
+                            class="light"
+                            onclick="updateStatus('${order.id}', 'Cancelled')"
+                        >
+                            Cancel Order
+                        </button>
+                    `;
+                }
             }
 
             return `
                 <article class="order">
                     <div>
-                        <span>ORDER ${order.id}</span>
+                        <span>ORDER ${esc(order.orderNumber || order.id)}</span>
 
                         <h3>
                             ${order.created}
                         </h3>
 
                         <p>
-                            ${order.payment} · ${peso(order.total)}
+                            ${esc(order.payment)} · ${peso(order.total)}
                         </p>
 
                         <span class="status ${statusClass(order.status)}">
@@ -1477,7 +1541,7 @@ async function getSupabaseAccountUser(user) {
 
     const { data: profile, error } = await SUPABASE_CLIENT
         .from("profiles")
-        .select("full_name")
+        .select("full_name, role")
         .eq("id", user.id)
         .single();
 
@@ -1488,8 +1552,38 @@ async function getSupabaseAccountUser(user) {
     return {
         id: user.id,
         name: profile.full_name || user.user_metadata?.full_name || user.email.split("@")[0],
-        email: user.email
+        email: user.email,
+        role: profile.role
     };
+}
+
+async function loadCustomerOrders() {
+    if (!SUPABASE_CLIENT || !S.user?.id) {
+        S.orders = JSON.parse(localStorage.getItem("mk_orders") || "[]");
+        renderOrders();
+        return;
+    }
+
+    const { data, error } = await SUPABASE_CLIENT
+        .from("store_orders")
+        .select("id, order_number, created_at, status, payment_method, total, items")
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        throw new Error(`Could not load your orders: ${error.message}`);
+    }
+
+    S.orders = data.map((order) => ({
+        id: order.id,
+        orderNumber: order.order_number,
+        created: new Date(order.created_at).toLocaleString(),
+        status: order.status,
+        payment: order.payment_method,
+        total: Number(order.total),
+        items: order.items,
+        cloud: true
+    }));
+    renderOrders();
 }
 
 function showAuthMessage(message = "") {
@@ -1612,6 +1706,14 @@ function showApp() {
     renderReviews();
     renderMe();
     counts();
+    if (ownerAdminLink) {
+        ownerAdminLink.classList.toggle("hidden", S.user?.role !== "owner");
+    }
+    if (S.user) {
+        loadCustomerOrders().catch((error) => {
+            toast(error instanceof Error ? error.message : "Could not load your orders.");
+        });
+    }
 
     view("home");
 }
@@ -1846,6 +1948,7 @@ logoutBtn.addEventListener("click", async () => {
 // 19. INITIALIZE WEBSITE
 // ---------------------------------------------------------
 async function init() {
+    await loadStoreData();
     renderHome();
     renderReviews();
     renderCart();

@@ -16,32 +16,36 @@ Push changes to `main` to trigger a Vercel deployment. The production URL is:
 SUPABASE DATABASE SETUP
 ------------------------------------------------
 1. Open the MaeKini project in the Supabase dashboard.
-2. Open SQL Editor and run:
+2. Open SQL Editor and run these migrations in order:
        supabase/migrations/20261109000000_create_profiles.sql
+       supabase/migrations/20261109190000_owner_admin_store_controls.sql
 3. In Authentication > URL Configuration, set the Site URL to:
        https://mae-kini.vercel.app
    Add this Redirect URL:
        https://mae-kini.vercel.app/**
 4. In Authentication > Providers, ensure Email sign-in is enabled.
 
-The migration creates a profile row automatically for new Auth users and
-enables row-level security. Never put a Supabase `service_role` or secret key
-in browser code. `supabase-config.js` contains only the project URL and
-publishable key, which are intended for public clients; database policies
-protect the data.
+The owner migration assigns `angiliemaedrama@gmail.com` the `owner` role and
+creates the secure products, orders, and store-links tables. Run it only after
+that account exists in Supabase Auth. It seeds the existing 57-product catalog.
+Never put a Supabase `service_role` or secret key in browser code.
+`supabase-config.js` contains only the project URL and publishable key, which
+are intended for public clients; row-level security protects owner operations.
 
 ADMIN ACCOUNT MONITORING
 ------------------------------------------------
-Open `/admin.html` on the deployed site, then choose the Supabase customer
-accounts link. Sign in to Supabase with your project-owner account to view and
-manage customers under Authentication > Users. The public website does not
-contain a shared admin password.
+Sign in to the storefront as `angiliemaedrama@gmail.com`, open the Me tab, and
+choose "Open owner dashboard" or visit `/admin.html`. The dashboard lists
+customer profiles, manages products and visibility, updates order status, and
+edits store social links. Customer account security and deletion remain in
+Supabase Authentication > Users. No shared admin password is used.
 
 STORE DATA
 ------------------------------------------------
-Customer identity and profile names use Supabase. Cart contents, favorites,
-orders, and product reviews are still stored in the customer's browser and do
-not sync across devices or appear in the Supabase dashboard.
+Customer identity, product catalog, social links, and signed-in customer orders
+use Supabase. Customers must sign in to place an order so the owner can manage
+it. Cart contents, favorites, and product reviews remain in that customer's
+browser and do not sync across devices.
 
 Product images are static files under:
     assets/products/<product-id>/product.jpg

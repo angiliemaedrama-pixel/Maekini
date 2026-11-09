@@ -688,6 +688,81 @@ input,textarea,select {
     display:none;
 }
 
+.adminSection {
+    margin-bottom:18px;
+}
+.adminSection h2 {
+    margin:0 0 6px;
+}
+.adminForm {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+    margin:18px 0;
+}
+.adminForm label {
+    display:grid;
+    gap:6px;
+    color:#28515a;
+    font-weight:700;
+    font-size:13px;
+}
+.adminForm input {
+    width:100%;
+}
+.adminForm .adminCheck {
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+.adminCheck input {
+    width:auto;
+}
+.adminWide {
+    grid-column:1 / -1;
+}
+.adminActions {
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+}
+.adminMessage:empty {
+    display:none;
+}
+.adminTableTop {
+    gap:16px;
+}
+.adminTableTop h2 {
+    margin:0 0 6px;
+}
+.adminTableTop p {
+    margin:0;
+}
+.adminSection table {
+    min-width:720px;
+}
+.adminSection td {
+    white-space:normal;
+    vertical-align:top;
+    max-width:280px;
+}
+.adminSection td small {
+    color:var(--muted);
+}
+.adminSection select {
+    min-width:150px;
+}
+.ownerAdminLink {
+    display:inline-flex;
+    margin:0 0 20px;
+    padding:12px 16px;
+    border-radius:12px;
+    background:#28515a;
+    color:#fff;
+    font-weight:700;
+}
+
 .adminHeader span {
     color:#c45d6b;
 }
@@ -698,6 +773,12 @@ input,textarea,select {
     }
     .adminHeader h1 {
         font-size:34px;
+    }
+    .adminForm {
+        grid-template-columns:1fr;
+    }
+    .adminWide {
+        grid-column:auto;
     }
 }
 

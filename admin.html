@@ -3,25 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MaeKini | Account Monitoring</title>
+    <title>MaeKini | Owner Dashboard</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="adminPage">
     <main class="adminWrap">
         <div class="adminHeader">
             <div>
-                <span>MAEKINI.COM</span>
-                <h1>Customer Accounts</h1>
-                <p>Customer accounts are securely managed with Supabase Auth.</p>
+                <span>MAEKINI.COM · OWNER</span>
+                <h1>Store dashboard</h1>
+                <p id="adminStatus" class="adminHelp" role="status">Checking your owner access…</p>
             </div>
             <a href="/">Back to Store</a>
         </div>
 
-        <section class="card adminLogin">
-            <h2>Monitor registrations</h2>
-            <p class="adminHelp">Sign in to your Supabase project to view, search, and manage registered customers. Admin access is not exposed through the public storefront.</p>
-            <p><a href="https://supabase.com/dashboard/project/mvsbsksnkpbqeuxufrar/auth/users" target="_blank" rel="noopener noreferrer">Open MaeKini customer accounts in Supabase</a></p>
+        <section id="adminDenied" class="card" hidden>
+            <h2>Owner sign-in required</h2>
+            <p class="adminHelp">Sign in to the storefront using the MaeKini owner account, then return here.</p>
+            <a href="/">Go to MaeKini</a>
         </section>
+
+        <div id="adminDashboard" hidden>
+            <section class="card adminSection">
+                <div class="adminTableTop">
+                    <div>
+                        <h2>Customers</h2>
+                        <p class="adminHelp">Customer profiles registered through MaeKini.</p>
+                    </div>
+                    <a href="https://supabase.com/dashboard/project/mvsbsksnkpbqeuxufrar/auth/users" target="_blank" rel="noopener noreferrer">Manage Auth users</a>
+                </div>
+                <div class="tableScroll">
+                    <table>
+                        <thead><tr><th>Name</th><th>Email</th><th>Joined</th><th>Role</th></tr></thead>
+                        <tbody id="customerRows"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="card adminSection">
+                <div class="adminTableTop">
+                    <div>
+                        <h2>Products</h2>
+                        <p class="adminHelp">Changes here update the live store catalog.</p>
+                    </div>
+                </div>
+                <form id="productForm" class="adminForm">
+                    <input id="productId" type="hidden">
+                    <label>Name<input id="productName" maxlength="180" required></label>
+                    <label>Category<input id="productCategory" maxlength="80" placeholder="women, modest, girls" required></label>
+                    <label>Price (PHP)<input id="productPrice" type="number" min="0" step="0.01" required></label>
+                    <label>Tag<input id="productTag" maxlength="40" placeholder="WOMEN, MODEST, NEW" required></label>
+                    <label class="adminWide">Image URL or path<input id="productImage" maxlength="1000" placeholder="assets/products/1/product.jpg" required></label>
+                    <label class="adminCheck"><input id="productActive" type="checkbox" checked> Visible in store</label>
+                    <div class="adminActions adminWide">
+                        <button id="saveProduct" type="submit">Add product</button>
+                        <button id="cancelProductEdit" class="light" type="button" hidden>Cancel edit</button>
+                    </div>
+                </form>
+                <p id="productMessage" class="adminMessage" role="status"></p>
+                <div class="tableScroll">
+                    <table>
+                        <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody id="productRows"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="card adminSection">
+                <div class="adminTableTop">
+                    <div>
+                        <h2>Orders</h2>
+                        <p class="adminHelp">Orders placed by signed-in customers.</p>
+                    </div>
+                </div>
+                <p id="orderMessage" class="adminMessage" role="status"></p>
+                <div class="tableScroll">
+                    <table>
+                        <thead><tr><th>Order</th><th>Customer</th><th>Delivery</th><th>Items</th><th>Total</th><th>Status</th><th>Update</th></tr></thead>
+                        <tbody id="orderRows"></tbody>
+                    </table>
+                </div>
+                <p id="ordersEmpty" class="adminHelp" hidden>No orders have been placed yet.</p>
+            </section>
+
+            <section class="card adminSection">
+                <div class="adminTableTop">
+                    <div>
+                        <h2>Store links</h2>
+                        <p class="adminHelp">Update the social links shown on the storefront.</p>
+                    </div>
+                </div>
+                <form id="settingsForm" class="adminForm">
+                    <label>Facebook<input id="socialFacebook" type="url"></label>
+                    <label>Instagram<input id="socialInstagram" type="url"></label>
+                    <label>LinkedIn<input id="socialLinkedin" type="url"></label>
+                    <label>X / Twitter<input id="socialTwitter" type="url"></label>
+                    <div class="adminActions adminWide">
+                        <button type="submit">Save store links</button>
+                    </div>
+                </form>
+                <p id="settingsMessage" class="adminMessage" role="status"></p>
+            </section>
+        </div>
     </main>
+    <script src="supabase-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="admin.js"></script>
 </body>
 </html>
