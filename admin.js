@@ -133,12 +133,41 @@ async function loadOrders() {
         throw error;
     }
 
+    const { data: requests, error: requestsError } = data.length
+        ? await client
+            .from("store_order_requests")
+            .select("id, order_id, request_type, item_name, quantity, reason, status, created_at")
+            .in("order_id", data.map((order) => order.id))
+            .order("created_at", { ascending: false })
+        : { data: [], error: null };
+
+    if (requestsError) {
+        throw requestsError;
+    }
+
     ordersEmpty.hidden = data.length > 0;
     orderRows.innerHTML = data.map((order) => {
         const itemSummary = (order.items || [])
             .map((item) => `${escapeHtml(item.name)} × ${Number(item.qty) || 0}`)
             .join("<br>");
         const statuses = ["Preparing for Ship", "In Transit", "Delivered", "Cancelled"];
+        const orderRequests = requests.filter((request) => request.order_id === order.id);
+        const requestSummary = orderRequests.length
+            ? orderRequests.map((request) => `
+                <div class="adminOrderRequest">
+                    <b>${escapeHtml(request.request_type)} · ${escapeHtml(request.status)}</b>
+                    <p>Item: ${escapeHtml(request.item_name)} × ${Number(request.quantity) || 0}</p>
+                    <p>${escapeHtml(request.reason)}</p>
+                    <small>${escapeHtml(new Date(request.created_at).toLocaleString())}</small>
+                    ${request.status === "Pending" ? `
+                        <div class="adminActions">
+                            <button type="button" data-order-request="${escapeHtml(request.id)}" data-request-decision="Approved">Approve request</button>
+                            <button type="button" class="light" data-order-request="${escapeHtml(request.id)}" data-request-decision="Declined">Decline</button>
+                        </div>
+                    ` : ""}
+                </div>
+            `).join("")
+            : "No requests";
         return `
             <tr>
                 <td>${escapeHtml(order.order_number)}<br><small>${escapeHtml(new Date(order.created_at).toLocaleString())}</small></td>
@@ -154,6 +183,7 @@ async function loadOrders() {
                         `).join("")}
                     </select>
                 </td>
+                <td>${requestSummary}</td>
             </tr>
         `;
     }).join("");
@@ -174,6 +204,11 @@ function subscribeToOrders() {
         .on(
             "postgres_changes",
             { event: "*", schema: "public", table: "store_orders" },
+            scheduleOrdersRefresh
+        )
+        .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "store_order_requests" },
             scheduleOrdersRefresh
         )
         .subscribe((status) => {
@@ -316,6 +351,31 @@ orderRows.addEventListener("change", async (event) => {
 
     setMessage(orderMessage, "Order status updated.");
     select.disabled = false;
+});
+
+orderRows.addEventListener("click", async (event) => {
+    const button = event.target.closest("[data-order-request]");
+    if (!button) {
+        return;
+    }
+
+    button.disabled = true;
+    setMessage(orderMessage, "");
+    const { error } = await client.rpc("review_store_order_request", {
+        p_request_id: button.dataset.orderRequest,
+        p_status: button.dataset.requestDecision
+    });
+
+    if (error) {
+        setMessage(orderMessage, `Could not review request: ${error.message}`, true);
+        button.disabled = false;
+        return;
+    }
+
+    setMessage(orderMessage, `Return/refund request ${button.dataset.requestDecision.toLowerCase()}. No payment refund was processed.`);
+    await loadOrders().catch((loadError) => {
+        setMessage(orderMessage, `Decision saved, but orders could not refresh: ${loadError.message}`, true);
+    });
 });
 
 settingsForm.addEventListener("submit", async (event) => {

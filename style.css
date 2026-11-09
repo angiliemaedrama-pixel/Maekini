@@ -405,6 +405,45 @@ main {
     color:var(--muted);
     font-size:12px;
 }
+.orderAction {
+    margin-top:12px;
+}
+.orderRequestStatus {
+    margin:14px 0 6px;
+}
+.orderRequestForm {
+    display:grid;
+    gap:8px;
+    max-width:560px;
+    margin-top:16px;
+}
+.orderRequestForm label {
+    font-weight:800;
+}
+.orderRequestForm textarea {
+    width:100%;
+    min-height:82px;
+    padding:11px 12px;
+    border:1px solid #e6ddd6;
+    border-radius:10px;
+    font:inherit;
+    resize:vertical;
+}
+.orderRequestForm button {
+    justify-self:start;
+}
+.adminOrderRequest {
+    min-width:190px;
+    padding:8px 0;
+    border-bottom:1px solid #e6ddd6;
+}
+.adminOrderRequest:last-child {
+    border-bottom:0;
+}
+.adminOrderRequest p {
+    margin:5px 0;
+    white-space:normal;
+}
 .step {
     border-top:4px solid #d5cec8;
     padding-top:7px;

@@ -1375,17 +1375,115 @@ function renderOrders() {
                         </p>
 
                         <span class="status ${statusClass(order.status)}">
-                            ${order.status}
+                            ${esc(order.status)}
                         </span>
                     </div>
 
                     ${track(order.status)}
                     <p class="orderStatusHelp">Order status is updated by the MaeKini store.</p>
+                    ${order.cloud && order.status === "Preparing for Ship" ? `
+                        <button class="light orderAction" type="button" data-cancel-order="${esc(order.id)}">
+                            Cancel order
+                        </button>
+                    ` : ""}
+                    ${order.cloud && order.status === "Delivered" ? renderReturnRequest(order) : ""}
                 </article>
             `;
         })
         .join("");
 }
+
+function renderReturnRequest(order) {
+    return (order.items || []).map((item) => {
+        const request = order.requests?.find((itemRequest) => itemRequest.itemId === item.id);
+        const requestStatus = request
+            ? `<p class="orderRequestStatus">Request for ${esc(request.itemName)} (×${Number(request.quantity) || 0}): <b>${esc(request.status)}</b></p>`
+            : "";
+
+        if (request?.status === "Pending" || request?.status === "Approved") {
+            return `${requestStatus}<p class="orderStatusHelp">Approved requests record the store's decision; payment refunds are not processed automatically.</p>`;
+        }
+
+        const itemKey = `${order.id}-${item.id}`;
+        return `
+            ${requestStatus}
+            <form class="orderRequestForm" data-return-request="${esc(order.id)}" data-return-item="${esc(item.id)}">
+                <label for="returnQuantity-${esc(itemKey)}">Request a return or refund for ${esc(item.name)}</label>
+                <input id="returnQuantity-${esc(itemKey)}" name="quantity" type="number" min="1" max="${Number(item.qty) || 1}" value="${Number(item.qty) || 1}" required>
+                <textarea id="returnReason-${esc(itemKey)}" name="reason" minlength="10" maxlength="1000" rows="3" required placeholder="Tell us why you are requesting a return or refund (at least 10 characters)."></textarea>
+                <button type="submit">Submit request</button>
+                <p class="orderStatusHelp">Your request will be reviewed by the store owner. Refunds are not processed automatically.</p>
+            </form>
+        `;
+    }).join("");
+}
+
+orders.addEventListener("click", async (event) => {
+    const button = event.target.closest("[data-cancel-order]");
+    if (!button) {
+        return;
+    }
+
+    if (!window.confirm("Cancel this order? This is available only before it ships.")) {
+        return;
+    }
+
+    button.disabled = true;
+    try {
+        const { error } = await SUPABASE_CLIENT.rpc("cancel_store_order", {
+            p_order_id: button.dataset.cancelOrder
+        });
+        if (error) {
+            throw new Error(error.message);
+        }
+    } catch (error) {
+        button.disabled = false;
+        toast(error instanceof Error ? error.message : "Could not cancel this order.");
+        return;
+    }
+
+    toast("Your order has been cancelled.");
+    loadCustomerOrders().catch((error) => {
+        console.error("Could not refresh orders after cancellation:", error);
+        toast(`Order cancelled, but could not refresh its status: ${error.message}`);
+    });
+});
+
+orders.addEventListener("submit", async (event) => {
+    const form = event.target.closest("[data-return-request]");
+    if (!form) {
+        return;
+    }
+
+    event.preventDefault();
+    if (!form.reportValidity()) {
+        return;
+    }
+
+    const button = form.querySelector("button[type=submit]");
+    button.disabled = true;
+    try {
+        const { error } = await SUPABASE_CLIENT.rpc("request_store_order_return", {
+            p_order_id: form.dataset.returnRequest,
+            p_item_id: Number(form.dataset.returnItem),
+            p_quantity: Number(form.elements.quantity.value),
+            p_reason: form.elements.reason.value.trim()
+        });
+        if (error) {
+            throw new Error(error.message);
+        }
+    } catch (error) {
+        button.disabled = false;
+        toast(error instanceof Error ? error.message : "Could not submit your request.");
+        return;
+    }
+
+    toast("Your return/refund request was sent for review.");
+    loadCustomerOrders().catch((error) => {
+        console.error("Could not refresh orders after submitting a return/refund request:", error);
+        toast(`Request submitted, but could not refresh its status: ${error.message}`);
+    });
+});
 
 // ---------------------------------------------------------
 // 14. CUSTOMER REVIEWS
@@ -1517,6 +1615,18 @@ async function loadCustomerOrders() {
         throw new Error(`Could not load your orders: ${error.message}`);
     }
 
+    const { data: requests, error: requestsError } = data.length
+        ? await SUPABASE_CLIENT
+            .from("store_order_requests")
+            .select("id, order_id, request_type, item_id, item_name, quantity, reason, status, created_at")
+            .in("order_id", data.map((order) => order.id))
+            .order("created_at", { ascending: false })
+        : { data: [], error: null };
+
+    if (requestsError) {
+        throw new Error(`Could not load your return/refund requests: ${requestsError.message}`);
+    }
+
     S.orders = data.map((order) => ({
         id: order.id,
         orderNumber: order.order_number,
@@ -1525,6 +1635,18 @@ async function loadCustomerOrders() {
         payment: order.payment_method,
         total: Number(order.total),
         items: order.items,
+        requests: requests
+            .filter((request) => request.order_id === order.id)
+            .map((request) => ({
+                id: request.id,
+                requestType: request.request_type,
+                itemId: request.item_id,
+                itemName: request.item_name,
+                quantity: request.quantity,
+                reason: request.reason,
+                status: request.status,
+                created: request.created_at
+            })),
         cloud: true
     }));
     renderOrders();
@@ -1569,6 +1691,24 @@ function subscribeToCustomerOrders(userId) {
                 customerOrdersRefreshTimer = window.setTimeout(() => {
                     loadCustomerOrders().catch((error) => {
                         console.error("Could not refresh customer orders:", error);
+                        toast(error.message);
+                    });
+                }, 100);
+            }
+        )
+        .on(
+            "postgres_changes",
+            {
+                event: "*",
+                schema: "public",
+                table: "store_order_requests",
+                filter: `user_id=eq.${userId}`
+            },
+            () => {
+                window.clearTimeout(customerOrdersRefreshTimer);
+                customerOrdersRefreshTimer = window.setTimeout(() => {
+                    loadCustomerOrders().catch((error) => {
+                        console.error("Could not refresh customer return/refund requests:", error);
                         toast(error.message);
                     });
                 }, 100);
