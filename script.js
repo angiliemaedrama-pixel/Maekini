@@ -2010,4 +2010,21 @@ async function init() {
     }
 }
 
+function scheduleFloatingScene() {
+    const loadScene = () => {
+        import("./floating3d.js")
+            .then(({ startFloatingScene }) => startFloatingScene())
+            .catch((error) => {
+                console.error("Could not start the MaeKini 3D background:", error);
+            });
+    };
+
+    if ("requestIdleCallback" in window) {
+        window.requestIdleCallback(loadScene, { timeout:2500 });
+    } else {
+        window.setTimeout(loadScene, 0);
+    }
+}
+
+scheduleFloatingScene();
 init();

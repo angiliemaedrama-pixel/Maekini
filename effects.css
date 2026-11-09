@@ -1,15 +1,21 @@
 html {
-    background:#f5f6f3;
+    min-height:100%;
+    background:
+        radial-gradient(ellipse at 12% 18%,#f8d8e9 0,transparent 42%),
+        radial-gradient(ellipse at 88% 78%,#dcd3f4 0,transparent 43%),
+        linear-gradient(135deg,#fff1e8,#f7eaf3 55%,#e9f4f0);
 }
 
 body {
+    min-height:100vh;
     background:transparent;
 }
 
 #intro {
     background:
-        radial-gradient(ellipse at 50% 20%,#457a78cc 0,transparent 42%),
-        linear-gradient(145deg,#102f39cc 8%,#174b54cc 52%,#cf6875cc 140%);
+        radial-gradient(ellipse at 78% 24%,#d484b477 0,transparent 38%),
+        radial-gradient(ellipse at 22% 78%,#9f82d366 0,transparent 42%),
+        linear-gradient(145deg,#482f50c9 8%,#70445fc4 54%,#a75270c9 140%);
 }
 
 .auth {

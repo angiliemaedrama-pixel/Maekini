@@ -1,6 +1,6 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 
-// Tune the palette, count, and drift here. Three.js is loaded on first interaction.
+// Tune the palette, count, and drift here. Three.js is loaded during browser idle time.
 const FLOATING_CONFIG = Object.freeze({
     colors: ["#f3a9c5", "#c8b3ee", "#ffc9b5", "#a9d8ef", "#fff0c7"],
     desktopCount: 32,
@@ -157,7 +157,7 @@ function startFloatingScene() {
         clearcoat:0.7,
         clearcoatRoughness:0.24,
         transparent:true,
-        opacity:0.82
+        opacity:0.9
     }));
     const kinds = ["heart", "butterfly", "star", "bow", "flower", "sparkle", "bubble", "pearl"];
     const objectCount = window.innerWidth <= 700
@@ -193,7 +193,7 @@ function startFloatingScene() {
             ? (Math.random() * 2 - 1) * viewport.halfHeight
             : viewport.halfHeight + 1.5);
         particle.z = Math.random() * 11 - 5.5;
-        particle.scale = 0.22 + Math.random() * (particle.kind === "heart" ? 0.48 : 0.36);
+        particle.scale = 0.38 + Math.random() * (particle.kind === "heart" ? 0.58 : 0.42);
         particle.rotation = Math.random() * Math.PI * 2;
         particle.rotationSpeed = (Math.random() - 0.5) * 0.24;
         particle.speed = FLOATING_CONFIG.driftSpeed * (0.45 + Math.random() * 1.15);
