@@ -14,26 +14,14 @@ const STORE_INFO = {
         twitter: "https://x.com/search?q=MaeKini.com"
     }
 };
-const LOCAL_ACCOUNTS_KEY = "mk_local_accounts_v1";
-
-const API_BASE_URL = (() => {
-    if (window.location.protocol === "file:") {
-        return "http://localhost:3000";
-    }
-
-    const localHosts = ["localhost", "127.0.0.1"];
-    if (localHosts.includes(window.location.hostname) && window.location.port !== "3000") {
-        return `${window.location.protocol}//${window.location.hostname}:3000`;
-    }
-
-    return "";
-})();
-const ACCOUNT_API_UNAVAILABLE_MESSAGE =
-    "Account server offline; using secure browser-local accounts.";
-
-function apiUrl(path) {
-    return `${API_BASE_URL}${path}`;
-}
+const SUPABASE_CONFIG = window.MAEKINI_SUPABASE_CONFIG;
+const SUPABASE_CLIENT =
+    SUPABASE_CONFIG && window.supabase?.createClient
+        ? window.supabase.createClient(
+            SUPABASE_CONFIG.url,
+            SUPABASE_CONFIG.publishableKey
+        )
+        : null;
 
 // ---------------------------------------------------------
 // 2. PRODUCT LIST
@@ -688,39 +676,6 @@ function updateProductZoomAvailability() {
     toggleProductZoom.textContent = "Zoom in";
     toggleProductZoom.setAttribute("aria-pressed", "false");
     productZoomHint.textContent = "Click photo or Zoom in for a closer preview";
-}
-
-async function loadProductImages() {
-    if (
-        window.location.protocol === "file:" ||
-        (["localhost", "127.0.0.1"].includes(window.location.hostname) &&
-            window.location.port !== "3000")
-    ) {
-        return;
-    }
-
-    try {
-        const response = await fetch(apiUrl("/api/product-images"), {
-            cache: "no-store"
-        });
-
-        if (!response.ok) {
-            throw new Error("Unable to load product images.");
-        }
-
-        const data = await response.json();
-        if (data && typeof data === "object" && !Array.isArray(data)) {
-            productImages = {
-                ...productImages,
-                ...data
-            };
-        }
-    } catch (error) {
-        console.warn(
-            "Maekini product images:",
-            error.message
-        );
-    }
 }
 
 function renderStars(rating) {
@@ -1513,181 +1468,28 @@ function renderMe() {
 }
 
 // ---------------------------------------------------------
-// 16. DATABASE LOGIN AND REGISTRATION
+// 16. SUPABASE AUTHENTICATION
 // ---------------------------------------------------------
-// Prefer the SQLite API and fall back to browser-local accounts when it is offline.
-async function apiRequest(url, options = {}) {
-    let response;
-    try {
-        response = await fetch(apiUrl(url), {
-            headers: {
-                "Content-Type": "application/json",
-                ...(options.headers || {})
-            },
-            ...options
-        });
-    } catch (error) {
-        if (error instanceof TypeError) {
-            throw new AccountApiUnavailableError(ACCOUNT_API_UNAVAILABLE_MESSAGE);
-        }
-        throw error;
+async function getSupabaseAccountUser(user) {
+    if (!user?.id || !user.email) {
+        throw new Error("Supabase returned incomplete account information.");
     }
 
-    const responseText = await response.text();
-    let data;
-    try {
-        data = responseText ? JSON.parse(responseText) : {};
-    } catch {
-        if (response.status === 404 || response.status >= 500) {
-            throw new AccountApiUnavailableError(ACCOUNT_API_UNAVAILABLE_MESSAGE);
-        }
-        throw new Error(`The account server returned an invalid response (${response.status}).`);
+    const { data: profile, error } = await SUPABASE_CLIENT
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .single();
+
+    if (error) {
+        throw new Error(`Could not load your customer profile: ${error.message}`);
     }
 
-    if (!data || typeof data !== "object" || Array.isArray(data)) {
-        throw new Error("The account server returned an invalid response.");
-    }
-
-    if (!response.ok) {
-        throw new Error(
-            typeof data.message === "string" && data.message
-                ? data.message
-                : `Request failed (${response.status}).`
-        );
-    }
-
-    return data;
-}
-
-class AccountApiUnavailableError extends Error {
-    constructor(message) {
-        super(message);
-        this.name = "AccountApiUnavailableError";
-    }
-}
-
-function readLocalAccounts() {
-    const storedAccounts = localStorage.getItem(LOCAL_ACCOUNTS_KEY);
-    if (!storedAccounts) {
-        return [];
-    }
-
-    let accounts;
-    try {
-        accounts = JSON.parse(storedAccounts);
-    } catch {
-        throw new Error("Saved browser accounts are damaged. Clear this site's saved data or use the Maekini server.");
-    }
-
-    if (
-        !Array.isArray(accounts) ||
-        accounts.some((account) =>
-            !account ||
-            typeof account.email !== "string" ||
-            typeof account.name !== "string" ||
-            typeof account.salt !== "string" ||
-            typeof account.passwordHash !== "string"
-        )
-    ) {
-        throw new Error("Saved browser accounts are invalid. Clear this site's saved data or use the Maekini server.");
-    }
-
-    return accounts;
-}
-
-async function hashLocalPassword(password, salt) {
-    if (!window.crypto?.subtle) {
-        throw new Error("Secure local sign-in needs a modern browser. Please update Chrome or Edge and try again.");
-    }
-
-    const key = await window.crypto.subtle.importKey(
-        "raw",
-        new TextEncoder().encode(password),
-        "PBKDF2",
-        false,
-        ["deriveBits"]
-    );
-    const saltBytes = Uint8Array.from(
-        salt.match(/.{2}/g) || [],
-        (byte) => Number.parseInt(byte, 16)
-    );
-    const digest = await window.crypto.subtle.deriveBits(
-        {
-            name: "PBKDF2",
-            salt: saltBytes,
-            iterations: 210000,
-            hash: "SHA-256"
-        },
-        key,
-        256
-    );
-
-    return Array.from(new Uint8Array(digest), (byte) =>
-        byte.toString(16).padStart(2, "0")
-    ).join("");
-}
-
-function createSalt() {
-    const bytes = window.crypto.getRandomValues(new Uint8Array(16));
-    return Array.from(bytes, (byte) =>
-        byte.toString(16).padStart(2, "0")
-    ).join("");
-}
-
-async function createLocalAccount(name, email, password) {
-    const accounts = readLocalAccounts();
-    if (accounts.some((account) => account.email === email)) {
-        throw new Error("That email already has an account in this browser. Log in instead.");
-    }
-
-    const salt = createSalt();
-    const account = {
-        id: `browser-${Date.now()}`,
-        name,
-        email,
-        salt,
-        passwordHash: await hashLocalPassword(password, salt),
-        createdAt: new Date().toISOString()
-    };
-
-    accounts.push(account);
-    localStorage.setItem(LOCAL_ACCOUNTS_KEY, JSON.stringify(accounts));
-    return account;
-}
-
-async function verifyLocalPassword(account, password) {
-    const actualHash = await hashLocalPassword(password, account.salt);
-    if (actualHash.length !== account.passwordHash.length) {
-        return false;
-    }
-
-    let difference = 0;
-    for (let index = 0; index < actualHash.length; index += 1) {
-        difference |= actualHash.charCodeAt(index) ^ account.passwordHash.charCodeAt(index);
-    }
-    return difference === 0;
-}
-
-function localAccountUser(account) {
     return {
-        id: account.id,
-        name: account.name,
-        email: account.email,
-        createdAt: account.createdAt,
-        lastLogin: new Date().toISOString()
+        id: user.id,
+        name: profile.full_name || user.user_metadata?.full_name || user.email.split("@")[0],
+        email: user.email
     };
-}
-
-function getApiUser(data) {
-    if (
-        !data.user ||
-        typeof data.user.name !== "string" ||
-        typeof data.user.email !== "string"
-    ) {
-        throw new Error("The account server response is missing customer details.");
-    }
-
-    return data.user;
 }
 
 function showAuthMessage(message = "") {
@@ -1721,22 +1523,34 @@ async function registerUser(event) {
     }
 
     try {
-        let accountUser;
-        try {
-            const data = await apiRequest("/api/register", {
-                method: "POST",
-                body: JSON.stringify({ name, email, password })
-            });
-            accountUser = getApiUser(data);
-        } catch (error) {
-            if (!(error instanceof AccountApiUnavailableError)) {
-                throw error;
-            }
-            const account = await createLocalAccount(name, email.toLowerCase(), password);
-            accountUser = localAccountUser(account);
-            showAuthMessage("Account created on this browser. It will be available here when you log in again.");
+        if (!SUPABASE_CLIENT) {
+            throw new Error("Cloud sign-in could not load. Check your internet connection and try again.");
         }
 
+        const { data, error } = await SUPABASE_CLIENT.auth.signUp({
+            email: email.toLowerCase(),
+            password,
+            options: {
+                data: { full_name: name },
+                emailRedirectTo: `${window.location.origin}/`
+            }
+        });
+
+        if (error) {
+            throw error;
+        }
+
+        if (!data.user) {
+            throw new Error("Supabase did not return a new account. Please try again.");
+        }
+
+        if (!data.session) {
+            registerPass.value = "";
+            showAuthMessage("Account created. Check your email for a confirmation link, then sign in.");
+            return;
+        }
+
+        const accountUser = await getSupabaseAccountUser(data.user);
         S.user = accountUser;
         save();
         registerPass.value = "";
@@ -1760,38 +1574,28 @@ async function loginUser(event) {
     }
 
     try {
-        const normalizedEmail = email.toLowerCase();
-        const browserAccount = readLocalAccounts().find(
-            (account) => account.email === normalizedEmail
-        );
-        let accountUser;
-
-        if (browserAccount) {
-            if (!(await verifyLocalPassword(browserAccount, password))) {
-                throw new Error("Incorrect email or password.");
-            }
-            accountUser = localAccountUser(browserAccount);
-        } else {
-            const data = await apiRequest("/api/login", {
-                method: "POST",
-                body: JSON.stringify({ email: normalizedEmail, password })
-            });
-            accountUser = getApiUser(data);
+        if (!SUPABASE_CLIENT) {
+            throw new Error("Cloud sign-in could not load. Check your internet connection and try again.");
         }
 
+        const normalizedEmail = email.toLowerCase();
+        const { data, error } = await SUPABASE_CLIENT.auth.signInWithPassword({
+            email: normalizedEmail,
+            password
+        });
+
+        if (error) {
+            throw error;
+        }
+
+        const accountUser = await getSupabaseAccountUser(data.user);
         S.user = accountUser;
         save();
         loginPass.value = "";
         toast("Welcome back, " + accountUser.name + ".");
         showApp();
     } catch (error) {
-        showAuthMessage(
-            error instanceof AccountApiUnavailableError
-                ? "No browser account was found and the account server is offline. Create an account here to save it securely in this browser."
-                : error instanceof Error
-                    ? error.message
-                    : "Login failed. Please check your details and try again."
-        );
+        showAuthMessage(error instanceof Error ? error.message : "Login failed. Please check your details and try again.");
     }
 }
 
@@ -2022,7 +1826,15 @@ document.querySelectorAll("input[name=pay]").forEach((radio) => {
 
 // Logout button
 // ---------------------------------------------------------
-logoutBtn.addEventListener("click", () => {
+logoutBtn.addEventListener("click", async () => {
+    if (SUPABASE_CLIENT) {
+        const { error } = await SUPABASE_CLIENT.auth.signOut();
+        if (error) {
+            toast(`Could not sign out: ${error.message}`);
+            return;
+        }
+    }
+
     S.user = null;
     save();
 
@@ -2034,8 +1846,6 @@ logoutBtn.addEventListener("click", () => {
 // 19. INITIALIZE WEBSITE
 // ---------------------------------------------------------
 async function init() {
-    await loadProductImages();
-
     renderHome();
     renderReviews();
     renderCart();
@@ -2043,12 +1853,30 @@ async function init() {
     renderOrders();
     counts();
 
+    if (!SUPABASE_CLIENT) {
+        showAuth("login");
+        showAuthMessage("Cloud sign-in could not load. Check your internet connection and refresh the page.");
+    } else {
+        const { data, error } = await SUPABASE_CLIENT.auth.getSession();
+        if (error) {
+            throw new Error(`Could not restore your cloud account session: ${error.message}`);
+        }
+
+        if (data.session?.user) {
+            S.user = await getSupabaseAccountUser(data.session.user);
+            save();
+            showApp();
+            return;
+        }
+
+        S.user = null;
+        localStorage.removeItem("mk_user");
+    }
+
     if (intro) {
         intro.classList.remove("hidden");
         auth.classList.add("hidden");
         app.classList.add("hidden");
-    } else if (S.user) {
-        showApp();
     } else {
         auth.classList.remove("hidden");
         app.classList.add("hidden");

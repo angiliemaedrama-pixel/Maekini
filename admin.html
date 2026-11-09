@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MaeKini | Admin</title>
+    <title>MaeKini | Account Monitoring</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="adminPage">
@@ -11,53 +11,17 @@
         <div class="adminHeader">
             <div>
                 <span>MAEKINI.COM</span>
-                <h1>Admin Dashboard</h1>
-                <p>Sign in to monitor registered customers.</p>
+                <h1>Customer Accounts</h1>
+                <p>Customer accounts are securely managed with Supabase Auth.</p>
             </div>
             <a href="/">Back to Store</a>
         </div>
 
-        <section id="adminLogin" class="card adminLogin" aria-labelledby="adminLoginTitle">
-            <h2 id="adminLoginTitle">Admin Sign In</h2>
-            <form id="adminLoginForm">
-                <label for="adminUsername">Username</label>
-                <input id="adminUsername" name="username" type="text" autocomplete="username" value="admin" required>
-                <label for="adminPassword">Password</label>
-                <input id="adminPassword" name="password" type="password" autocomplete="current-password" required>
-                <button class="btn" type="submit">Sign in</button>
-            </form>
-            <p class="adminHelp">Use the admin credentials configured for the server.</p>
-            <p id="adminMessage" role="status" aria-live="polite"></p>
-        </section>
-
-        <section id="adminDashboard" class="card" hidden aria-labelledby="customerHeading">
-            <div class="adminTableTop">
-                <div>
-                    <h2 id="customerHeading">Registered Customers</h2>
-                    <p id="customerCount">Loading customer list...</p>
-                </div>
-                <div>
-                    <button id="refreshCustomers" class="btn" type="button">Refresh</button>
-                    <button id="adminSignOut" class="light" type="button">Sign out</button>
-                </div>
-            </div>
-            <p id="dashboardMessage" role="status" aria-live="polite"></p>
-            <div class="tableScroll">
-                <table>
-                    <thead>
-                        <tr>
-                            <th scope="col">ID</th>
-                            <th scope="col">Name</th>
-                            <th scope="col">Email</th>
-                            <th scope="col">Registered</th>
-                            <th scope="col">Last Login</th>
-                        </tr>
-                    </thead>
-                    <tbody id="customerRows"></tbody>
-                </table>
-            </div>
+        <section class="card adminLogin">
+            <h2>Monitor registrations</h2>
+            <p class="adminHelp">Sign in to your Supabase project to view, search, and manage registered customers. Admin access is not exposed through the public storefront.</p>
+            <p><a href="https://supabase.com/dashboard/project/mvsbsksnkpbqeuxufrar/auth/users" target="_blank" rel="noopener noreferrer">Open MaeKini customer accounts in Supabase</a></p>
         </section>
     </main>
-    <script src="admin.js" defer></script>
 </body>
 </html>
