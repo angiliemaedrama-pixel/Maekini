@@ -1,0 +1,11 @@
+MAEKINI PRODUCT IMAGE MAPPING
+
+All 57 supplied photos are stored in numbered product folders.
+
+1-40  = supplied first 8x5 collage, read left-to-right, top-to-bottom.
+41-55 = supplied second collage, first 3 rows only, read left-to-right, top-to-bottom.
+56    = supplied solo pink-background product image, preserved as provided.
+57    = supplied solo pink-background product image, preserved as provided.
+
+The original backgrounds/watermarks/logos were not removed or recolored.
+The collage grid lines were cropped away so they do not appear on product cards; the actual product background remains unchanged.

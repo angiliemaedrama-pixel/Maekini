@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaeKini.com | Swimwear for Everyone</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <section id="intro" class="intro">
+        <div class="intro-top">
+            <a class="intro-site-name" href="#intro" aria-label="MaeKini.com home">MaeKini.com</a>
+            <div class="intro-actions">
+                <button id="introLogin" class="intro-link" type="button">Log in</button>
+                <button id="introRegister" class="intro-link" type="button">Create account</button>
+            </div>
+        </div>
+
+        <div class="intro-content">
+            <div class="intro-copy">
+                <span class="intro-kicker">MAEKINI SWIM COLLECTION</span>
+                <h1 class="intro-wordmark" aria-label="Maekini">MAEKINI</h1>
+                <p class="intro-tagline">Make waves. Make it yours.</p>
+                <p class="intro-caption">Confident two-piece, one-piece, and modest swimwear, thoughtfully selected for your next sun-soaked day.</p>
+                <div class="intro-actions">
+                    <button id="enterStore" type="button">Enter the store <span aria-hidden="true">→</span></button>
+                    <button id="introGuest" class="intro-link" type="button">Browse as guest</button>
+                </div>
+                <div class="intro-note">
+                    <span aria-hidden="true">✦</span>
+                    <span>A little sunshine, a lot of confidence.</span>
+                </div>
+            </div>
+
+            <figure class="intro-photo">
+                <img src="assets/products/57/product.jpg" alt="Floral MaeKini two-piece swimsuit" fetchpriority="high">
+                <figcaption>Find your feel-good fit.</figcaption>
+            </figure>
+        </div>
+        <div class="intro-bottom"><span>MAEKINI.COM</span><span>SWIM YOUR OWN WAY</span></div>
+    </section>
+
+    <section id="auth" class="auth hidden">
+        <div class="authbox">
+            <button id="backToIntro" class="back-link" type="button">← Back to MaeKini.com</button>
+            <h1>Welcome to MaeKini</h1>
+            <p>Sign in or create your account to keep your favorites close.</p>
+
+            <div class="authTabs">
+                <button id="showLogin" class="active" type="button">Log In</button>
+                <button id="showRegister" class="light" type="button">Create Account</button>
+            </div>
+
+            <form id="loginForm" class="authForm">
+                <input id="loginName" type="email" autocomplete="username" placeholder="Email address" required>
+                <input id="loginPass" type="password" autocomplete="current-password" placeholder="Password" required>
+                <button type="submit">Log In</button>
+            </form>
+
+            <form id="registerForm" class="authForm hidden">
+                <input id="registerName" autocomplete="name" placeholder="Full name" required>
+                <input id="registerEmail" type="email" autocomplete="email" placeholder="Email address" required>
+                <input id="registerPass" type="password" autocomplete="new-password" placeholder="Create password" minlength="6" required>
+                <button type="submit">Create Account</button>
+            </form>
+
+            <p id="authMessage" class="auth-message hidden" role="alert" aria-live="polite"></p>
+            <button id="guestBtn" class="light" type="button">Continue as Guest</button>
+            <p class="authNote">If the server is offline, accounts are saved securely in this browser.</p>
+        </div>
+    </section>
+
+    <div id="app" class="hidden">
+        <header>
+            <button class="brand" data-view="home" type="button" aria-label="MaeKini.com home">MaeKini.com</button>
+
+            <div class="search">
+                <input id="searchInput" type="search" placeholder="Search swimwear...">
+                <button id="searchBtn">Search</button>
+            </div>
+
+            <div class="headActions">
+                <button data-view="favorites">Favorites <b id="favCount">0</b></button>
+                <button data-view="cart">Cart <b id="cartCount">0</b></button>
+            </div>
+        </header>
+
+        <main>
+            <section id="home" class="view active">
+                <div class="hero">
+                    <div>
+                        <span>MAEKINI COLLECTION</span>
+                        <h2>Confidence looks good on you.</h2>
+                        <p>Discover expressive two-piece, one-piece, and modest swimwear made for your kind of sunshine.</p>
+                        <button data-view="shop">Shop the collection</button>
+                    </div>
+                    <div class="heroImg">
+                        <img src="assets/products/56/product.jpg" alt="Pink paisley two-piece swimwear from MaeKini" fetchpriority="high">
+                    </div>
+                </div>
+
+                <div class="cats">
+                    <button data-cat="all">All swimwear<small>Explore every style</small><span aria-hidden="true">→</span></button>
+                    <button data-cat="sets">Two piece / one piece<small>Find your favorite fit</small><span aria-hidden="true">→</span></button>
+                    <button data-cat="modest">Modest<small>Feel-good coverage</small><span aria-hidden="true">→</span></button>
+                </div>
+
+                <h3>Featured Products</h3>
+                <div id="featured" class="grid"></div>
+
+                <div class="story">
+                    <article class="story-main">
+                        <span>THE NAME, THE WOMEN, THE VIBE</span>
+                        <h3>Why MaeKini?</h3>
+                        <p>Two names. One sun-soaked idea. <b>MaeKini</b> brings together the CEOs, <b>April Mae</b> and <b>Angilie Mae</b>—then adds a little <i>kini</i> for the swimwear we love.</p>
+                        <p>We believe your beach day should feel like <b>you</b>: bold, comfortable, beautifully covered, or ready to make a splash. Your style. Your rules. Your MaeKini moment.</p>
+                    </article>
+                    <article class="story-side">
+                        <span>THE VIBE</span>
+                        <h3>Sunshine looks good on you.</h3>
+                        <p>From playful two-pieces to graceful modest sets, every pick is about feeling comfortable, radiant, and completely yourself.</p>
+                        <p class="story-slogan">SUNSHINE LOOKS GOOD ON YOU</p>
+                    </article>
+                </div>
+
+                <footer class="social">
+                    <div class="social-copy">
+                        <span>STAY IN THE SUN</span>
+                        <h3>Follow MaeKini.com</h3>
+                    </div>
+                    <div class="social-links">
+                        <a id="fb" href="#" target="_blank" rel="noopener noreferrer" aria-label="Facebook · MaeKini.com">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 21v-8.2h2.8l.4-3.2h-3.2V7.5c0-.9.3-1.6 1.6-1.6h1.7V3.1c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3v2.3H7.3v3.2h2.8V21h3.4Z"/></svg>
+                            <span>Facebook</span>
+                        </a>
+                        <a id="ig" href="#" target="_blank" rel="noopener noreferrer" aria-label="Instagram · MaeKini.com">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle class="icon-dot" cx="17.7" cy="6.7" r="1"/></svg>
+                            <span>Instagram</span>
+                        </a>
+                        <a id="li" href="#" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn · MaeKini.com">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.2 8.6a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6ZM3.7 10h3v10h-3V10Zm5 0h2.9v1.4h.1a3.2 3.2 0 0 1 2.9-1.6c3.1 0 3.7 2 3.7 4.6V20h-3v-5c0-1.2 0-2.7-1.7-2.7s-2 1.3-2 2.6V20h-3V10Z"/></svg>
+                            <span>LinkedIn</span>
+                        </a>
+                        <a id="tw" href="#" target="_blank" rel="noopener noreferrer" aria-label="X · MaeKini.com">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.8 3H22l-7 8 8.2 10h-6.4l-5-6.2L6.4 21H3.2l7.5-8.6L2.8 3h6.6l4.5 5.7L18.8 3Zm-1.1 16.2h1.8L8 4.7H6.1l11.6 14.5Z"/></svg>
+                            <span>X</span>
+                        </a>
+                    </div>
+                    <p class="social-brand">MaeKini.com <span>© 2026</span></p>
+                </footer>
+            </section>
+
+            <section id="shop" class="view">
+                <div class="pageHead">
+                    <div>
+                        <span>SHOP</span>
+                        <h2>Browse Maekini</h2>
+                    </div>
+                    <p id="searchText"></p>
+                </div>
+
+                <div class="filters">
+                    <button data-filter="all" class="active">All</button>
+                    <button data-filter="sets">Two piece / one piece</button>
+                    <button data-filter="modest">Modest</button>
+                </div>
+
+                <div id="shopGrid" class="grid"></div>
+            </section>
+
+            <section id="favorites" class="view">
+                <div class="pageHead">
+                    <div>
+                        <span>SAVED ITEMS</span>
+                        <h2>Favorites</h2>
+                    </div>
+                </div>
+                <div id="favGrid" class="grid"></div>
+                <div id="favEmpty" class="empty hidden">No favorites yet. Save a product by clicking the heart.</div>
+            </section>
+
+            <section id="cart" class="view">
+                <div class="pageHead">
+                    <div>
+                        <span>YOUR BAG</span>
+                        <h2>Shopping Cart</h2>
+                    </div>
+                </div>
+
+                <div class="two">
+                    <div id="cartItems"></div>
+                    <aside class="card">
+                        <h3>Order Summary</h3>
+                        <p>Subtotal <b id="sub">₱0</b></p>
+                        <p>Shipping <b id="ship">₱0</b></p>
+                        <p>Total <b id="total">₱0</b></p>
+                        <button id="checkoutBtn">Proceed to Checkout</button>
+                    </aside>
+                </div>
+                <div id="cartEmpty" class="empty hidden">Your cart is empty.</div>
+            </section>
+
+            <section id="checkout" class="view">
+                <div class="pageHead">
+                    <div>
+                        <span>CHECKOUT</span>
+                        <h2>Complete Your Order</h2>
+                    </div>
+                </div>
+
+                <div class="two">
+                    <form id="checkoutForm" class="card">
+                        <h3>Delivery Details</h3>
+                        <input id="custName" placeholder="Full name" required>
+                        <input id="custPhone" placeholder="Mobile number" required>
+                        <textarea id="custAddress" rows="4" placeholder="Complete delivery address" required></textarea>
+
+                        <h3>Payment Method</h3>
+                        <label class="payment"><input type="radio" name="pay" value="Maya"> <b>Maya</b> <span>Pay with Maya</span></label>
+                        <label class="payment"><input type="radio" name="pay" value="GCash"> <b>GCash</b> <span>Pay with GCash</span></label>
+                        <label class="payment"><input type="radio" name="pay" value="COD"> <b>Cash on Delivery</b> <span>Pay when delivered</span></label>
+                        <label class="payment"><input type="radio" name="pay" value="Credit Card"> <b>Credit Card</b> <span>Demo payment option</span></label>
+                        <p id="cardNote" class="notice hidden">This is a school-project prototype. Do not enter real card numbers. A real store should use a secure payment gateway.</p>
+
+                        <button type="submit">Place Order</button>
+                    </form>
+
+                    <aside class="card">
+                        <h3>Order Summary</h3>
+                        <div id="checkoutItems"></div>
+                        <p>Total <b id="checkoutTotal">₱0</b></p>
+                    </aside>
+                </div>
+            </section>
+
+            <section id="alerts" class="view">
+                <div class="pageHead">
+                    <div>
+                        <span>ORDER UPDATES</span>
+                        <h2>Alerts & Tracking</h2>
+                    </div>
+                </div>
+                <div id="orders"></div>
+                <div id="ordersEmpty" class="empty hidden">No orders yet. Your parcel updates will appear here.</div>
+            </section>
+
+            <section id="reviews" class="view">
+                <div class="pageHead">
+                    <div>
+                        <span>CUSTOMER FEEDBACK</span>
+                        <h2>Reviews</h2>
+                    </div>
+                </div>
+
+                <div class="two">
+                    <div id="reviewList"></div>
+                    <form id="reviewForm" class="card">
+                        <h3>Write a Review</h3>
+                        <p id="reviewContext" class="review-context hidden"></p>
+                        <input id="reviewName" placeholder="Your name" required>
+                        <select id="reviewRating" required>
+                            <option value="5">5 - Excellent</option>
+                            <option value="4">4 - Very Good</option>
+                            <option value="3">3 - Good</option>
+                            <option value="2">2 - Fair</option>
+                            <option value="1">1 - Poor</option>
+                        </select>
+                        <textarea id="reviewText" rows="5" placeholder="Your review" required></textarea>
+                        <button type="submit">Submit Review</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="me" class="view">
+                <div class="profile">
+                    <div id="avatar">M</div>
+                    <div>
+                        <span>MY ACCOUNT</span>
+                        <h2 id="profileName">Guest Shopper</h2>
+                        <p id="profileEmail">Browsing as guest</p>
+                    </div>
+                </div>
+
+                <div class="accountGrid">
+                    <button data-view="alerts"><b>My Orders</b><small>Track every order status.</small></button>
+                    <button data-view="favorites"><b>Favorites</b><small>View saved products.</small></button>
+                    <button data-view="reviews"><b>Reviews</b><small>Read or add feedback.</small></button>
+                    <button data-view="home"><b>About Maekini</b><small>Brand story and socials.</small></button>
+                </div>
+
+                <button id="logoutBtn" class="light">Log Out</button>
+            </section>
+        </main>
+
+        <nav>
+            <button data-view="home" class="active">Home</button>
+            <button data-view="shop">Shop</button>
+            <button data-view="cart">Cart <b id="navCart">0</b></button>
+            <button data-view="alerts">Alerts</button>
+            <button data-view="me">Me</button>
+        </nav>
+    </div>
+
+    <section id="productModal" class="product-modal hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="productModalTitle" tabindex="-1">
+        <div class="product-dialog">
+            <button id="closeProduct" class="modal-close" type="button" aria-label="Close product details">×</button>
+            <div class="product-detail-image">
+                <img id="productModalImage" src="" alt="">
+                <span class="zoom-hint">Click photo to zoom</span>
+                <button id="toggleProductZoom" class="zoom-toggle" type="button" aria-pressed="false">Zoom in</button>
+            </div>
+            <div class="product-detail-copy">
+                <span id="productModalTag" class="tag"></span>
+                <h2 id="productModalTitle"></h2>
+                <div class="product-detail-rating">
+                    <span id="productModalStars"></span>
+                    <b id="productModalRating"></b>
+                    <span id="productModalSold"></span>
+                </div>
+                <p id="productModalPrice" class="price product-detail-price"></p>
+                <div class="product-reviews">
+                    <h3>Customer reviews</h3>
+                    <div id="productModalReviews"></div>
+                </div>
+                <div class="product-modal-actions">
+                    <button id="productModalAdd" type="button">Add to bag</button>
+                    <button id="productWriteReview" class="light" type="button">Write a review</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="toast"></div>
+    <script src="script.js"></script>
+</body>
+</html>
