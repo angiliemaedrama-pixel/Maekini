@@ -11,13 +11,13 @@ the current browser. Browser-local accounts do not sync to another browser or
 the SQLite database.
 
 In VS Code, open the Run and Debug panel, select
-`MaeKini: Store and Admin (port 3000)`, and press F5. This starts `server.js`
-and opens the admin page at `http://localhost:3000/admin.html`.
+`MaeKini: Store (port 3000)`, and press F5. This starts `server.js` and opens
+the storefront at `http://localhost:3000/`.
 
 Alternatively, double-click `start-maekini.bat`. It checks for Node.js 22+,
 starts the account server in a separate window, waits for it to respond, and
-opens the admin page. Keep the account-server window open while using the
-store or admin page.
+opens the storefront. Keep the account-server window open while using the
+store.
 
 VS Code Live Server uses port 5500 for its static preview. That is a separate
 server from `server.js`, which runs the account database and API on port 3000.
@@ -47,32 +47,42 @@ admin.html through Live Server (port 5500), the admin page sends its customer
 request to the account server on port 3000. If that server is not running,
 start it with the F5 configuration or `start-maekini.bat`.
 
-Enter the admin key.
-Default school-project key:
+Sign in with the default school-project admin account:
 
+Username:
+    admin
+
+Password:
     maekini-admin
 
-The page shows:
+The page shows registered customer details:
 - Customer ID
 - Full name
 - Email
 - Date/time registered
 - Last login
 
-IMPORTANT: Change the admin key before using this outside a school/demo environment.
-You can start the server with a custom key in the terminal.
+IMPORTANT: These are demo credentials. Change them before use beyond a local
+demo, and do not expose this development server directly to the internet.
+Configure the admin username and password using environment variables when
+starting the server.
 
 Windows PowerShell:
-    $env:MAEKINI_ADMIN_KEY="your-new-key"; node server.js
+    $env:MAEKINI_ADMIN_USERNAME="your-admin-name"; $env:MAEKINI_ADMIN_KEY="use-a-long-unique-password"; node server.js
 
 Windows Command Prompt:
-    set MAEKINI_ADMIN_KEY=your-new-key && node server.js
+    set MAEKINI_ADMIN_USERNAME=your-admin-name && set MAEKINI_ADMIN_KEY=use-a-long-unique-password && node server.js
 
 3. DATABASE FILE
 ------------------------------------------------
 After the server starts for the first time, it creates:
 
-    maekini.db
+    %LOCALAPPDATA%\MaeKini\maekini.db
+
+On Windows, this is usually inside your user AppData\Local folder. This keeps
+the database writable even when the project was opened from a read-only
+Downloads or extracted archive folder. Set MAEKINI_DATABASE_FILE to choose a
+different database path.
 
 This is the SQLite database containing registered customer records.
 Passwords are NOT stored as plain text. The server stores a password hash instead.
@@ -127,7 +137,16 @@ X · MaeKini.com
 
 To add the real URLs, edit STORE_INFO at the top of script.js.
 
-7. IMPORTANT
+7. FLOATING 3D DECOR
+------------------------------------------------
+The page includes `effects.css` from the document head. Floating shapes are
+defined in `floating3d.js`. Three.js 0.180.0 is
+loaded from `https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js`
+only after the first page interaction. No package install is needed. Both
+the 3D effect respects reduced-motion preferences, and the canvas never
+captures clicks.
+
+8. IMPORTANT
 ------------------------------------------------
 This is a school-project/demo e-commerce system.
 The payment choices are demonstration options only and do not process real Maya, GCash, COD, or credit-card transactions.
@@ -165,6 +184,6 @@ Instead:
 2. Open Terminal.
 3. Run: node server.js
 4. Open: http://localhost:3000/admin.html
-5. Enter: maekini-admin
+5. Sign in with username `admin` and password `maekini-admin`.
 
 The database file maekini.db is created automatically when the server starts.

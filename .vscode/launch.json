@@ -4,13 +4,13 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "MaeKini: Store and Admin (port 3000)",
+            "name": "MaeKini: Store (port 3000)",
             "program": "${workspaceFolder}/server.js",
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
             "serverReadyAction": {
                 "pattern": "Maekini is running at (https?://\\S+)",
-                "uriFormat": "%s/admin.html",
+                "uriFormat": "%s/",
                 "action": "openExternally"
             }
         }

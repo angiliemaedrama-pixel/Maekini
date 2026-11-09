@@ -618,6 +618,17 @@ nav button.active {
     max-width:600px;
     margin-bottom:18px;
 }
+.adminLogin form {
+    display:grid;
+    gap:10px;
+    margin:18px 0;
+}
+.adminLogin input {
+    width:100%;
+}
+.adminLogin button {
+    justify-self:start;
+}
 .adminHelp {
     margin-bottom:0;
     color:var(--muted);
@@ -667,6 +678,14 @@ input,textarea,select {
 
 .adminHeader h1,.adminTableTop h2 {
     color:#18353b;
+}
+.adminTableTop > div:last-child {
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
+.adminPage [hidden] {
+    display:none;
 }
 
 .adminHeader span {

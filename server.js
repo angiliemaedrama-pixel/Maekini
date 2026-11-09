@@ -1,7 +1,7 @@
 // =========================================================
 // MAEKINI DATABASE SERVER
 // =========================================================
-// This file creates a local SQLite database named maekini.db.
+// This file creates a local SQLite database in the current user's data folder.
 // It stores registered customers and their registration/login times.
 // Run this project with: node server.js
 // Then open: http://localhost:3000
@@ -12,11 +12,15 @@ const path = require("node:path");
 const crypto = require("node:crypto");
 const { DatabaseSync } = require("node:sqlite");
 
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
+const ADMIN_USERNAME = process.env.MAEKINI_ADMIN_USERNAME || "admin";
 const ADMIN_KEY = process.env.MAEKINI_ADMIN_KEY || "maekini-admin";
 const ROOT = __dirname;
-const DATABASE_FILE = path.join(ROOT, "maekini.db");
+const USER_DATA_ROOT = process.env.LOCALAPPDATA || process.env.APPDATA || ROOT;
+const DEFAULT_DATABASE_FILE = path.join(USER_DATA_ROOT, "MaeKini", "maekini.db");
+const DATABASE_FILE = process.env.MAEKINI_DATABASE_FILE || DEFAULT_DATABASE_FILE;
 
+fs.mkdirSync(path.dirname(DATABASE_FILE), { recursive:true });
 const database = new DatabaseSync(DATABASE_FILE);
 
 database.exec(`
@@ -204,11 +208,12 @@ function handleLogin(request, response) {
 }
 
 function handleUsers(request, response) {
+    const username = request.headers["x-admin-username"];
     const key = request.headers["x-admin-key"];
 
-    if (key !== ADMIN_KEY) {
+    if (username !== ADMIN_USERNAME || key !== ADMIN_KEY) {
         return sendJson(response, 401, {
-            message: "Invalid admin key."
+            message: "Invalid admin credentials."
         });
     }
 
@@ -305,7 +310,7 @@ const server = http.createServer((request, response) => {
         response.writeHead(204, {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, X-Admin-Key"
+            "Access-Control-Allow-Headers": "Content-Type, X-Admin-Username, X-Admin-Key"
         });
         response.end();
         return;
@@ -333,5 +338,6 @@ const server = http.createServer((request, response) => {
 server.listen(PORT, () => {
     console.log("Maekini is running at http://localhost:" + PORT);
     console.log("Admin page: http://localhost:" + PORT + "/admin.html");
-    console.log("Default demo admin key: " + ADMIN_KEY);
+    console.log("Database file: " + DATABASE_FILE);
+    console.log("Admin username: " + ADMIN_USERNAME);
 });

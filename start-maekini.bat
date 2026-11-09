@@ -29,7 +29,7 @@ if %NODE_MAJOR% LSS 22 (
 set "SERVER_URL=http://localhost:3000"
 set "STATUS_FILE=%TEMP%\maekini-server-status-%RANDOM%.txt"
 call :checkServer
-if "!SERVER_STATUS!"=="401" goto openAdmin
+if "!SERVER_STATUS!"=="401" goto openStore
 
 echo Starting MaeKini account server...
 start "MaeKini Account Server" /D "%~dp0" cmd.exe /k ""%NODE_EXE%" server.js"
@@ -37,7 +37,7 @@ start "MaeKini Account Server" /D "%~dp0" cmd.exe /k ""%NODE_EXE%" server.js"
 for /L %%I in (1,1,20) do (
     timeout /t 1 /nobreak >nul
     call :checkServer
-    if "!SERVER_STATUS!"=="401" goto openAdmin
+    if "!SERVER_STATUS!"=="401" goto openStore
 )
 
 echo The MaeKini account server did not start.
@@ -53,9 +53,8 @@ curl.exe --silent --show-error --output nul --write-out "%%{http_code}" "%SERVER
 if exist "%STATUS_FILE%" set /p "SERVER_STATUS="<"%STATUS_FILE%"
 exit /b 0
 
-:openAdmin
+:openStore
 if exist "%STATUS_FILE%" del "%STATUS_FILE%" >nul 2>nul
-echo MaeKini account server is ready.
-echo Admin key: maekini-admin
-start "" "%SERVER_URL%/admin.html"
+echo MaeKini store is ready.
+start "" "%SERVER_URL%/"
 exit /b 0
