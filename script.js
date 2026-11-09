@@ -667,6 +667,9 @@ let productImages = Object.fromEntries(
 let selectedProductId = null;
 let activeReviewProductId = null;
 let productTrigger = null;
+let customerOrdersChannel = null;
+let customerOrdersUserId = null;
+let customerOrdersRefreshTimer = null;
 
 function updateProductZoomAvailability() {
     if (!productModalImage || !toggleProductZoom || !productZoomHint) {
@@ -1350,25 +1353,6 @@ function track(status) {
     `;
 }
 
-async function updateStatus(orderId, newStatus) {
-    const order = S.orders.find((item) => {
-        return item.id === orderId;
-    });
-
-    if (order) {
-        if (order.cloud) {
-            toast("Only the store owner can update cloud order status.");
-            return;
-        }
-
-        order.status = newStatus;
-
-        save();
-        renderOrders();
-        toast("Order updated: " + newStatus);
-    }
-}
-
 function renderOrders() {
     ordersEmpty.classList.toggle(
         "hidden",
@@ -1377,44 +1361,6 @@ function renderOrders() {
 
     orders.innerHTML = S.orders
         .map((order) => {
-            let actionButtons = "";
-
-            if (!order.cloud) {
-                if (order.status === "Preparing for Ship") {
-                    actionButtons += `
-                        <button
-                            onclick="updateStatus('${order.id}', 'In Transit')"
-                        >
-                            Demo: Mark In Transit
-                        </button>
-                    `;
-                }
-
-                if (order.status === "In Transit") {
-                    actionButtons += `
-                        <button
-                            onclick="updateStatus('${order.id}', 'Delivered')"
-                        >
-                            Demo: Mark Delivered
-                        </button>
-                    `;
-                }
-
-                if (
-                    order.status === "Preparing for Ship" ||
-                    order.status === "In Transit"
-                ) {
-                    actionButtons += `
-                        <button
-                            class="light"
-                            onclick="updateStatus('${order.id}', 'Cancelled')"
-                        >
-                            Cancel Order
-                        </button>
-                    `;
-                }
-            }
-
             return `
                 <article class="order">
                     <div>
@@ -1434,10 +1380,7 @@ function renderOrders() {
                     </div>
 
                     ${track(order.status)}
-
-                    <div class="orderActions">
-                        ${actionButtons}
-                    </div>
+                    <p class="orderStatusHelp">Order status is updated by the MaeKini store.</p>
                 </article>
             `;
         })
@@ -1567,6 +1510,7 @@ async function loadCustomerOrders() {
     const { data, error } = await SUPABASE_CLIENT
         .from("store_orders")
         .select("id, order_number, created_at, status, payment_method, total, items")
+        .eq("user_id", S.user.id)
         .order("created_at", { ascending: false });
 
     if (error) {
@@ -1584,6 +1528,77 @@ async function loadCustomerOrders() {
         cloud: true
     }));
     renderOrders();
+}
+
+function subscribeToCustomerOrders(userId) {
+    if (!SUPABASE_CLIENT || !userId || customerOrdersUserId === userId) {
+        return;
+    }
+
+    if (customerOrdersChannel) {
+        SUPABASE_CLIENT.removeChannel(customerOrdersChannel).catch((error) => {
+            console.error("Could not close the previous order updates channel:", error);
+        });
+    }
+
+    customerOrdersUserId = userId;
+    customerOrdersChannel = SUPABASE_CLIENT
+        .channel(`customer-orders-${userId}`)
+        .on(
+            "postgres_changes",
+            {
+                event: "*",
+                schema: "public",
+                table: "store_orders",
+                filter: `user_id=eq.${userId}`
+            },
+            (payload) => {
+                const updatedOrder = payload.new;
+                const previousOrder = S.orders.find((order) => order.id === updatedOrder?.id);
+                if (
+                    payload.eventType === "UPDATE"
+                    && previousOrder
+                    && previousOrder.status !== updatedOrder.status
+                ) {
+                    previousOrder.status = updatedOrder.status;
+                    renderOrders();
+                    toast(`Order ${previousOrder.orderNumber} is now ${updatedOrder.status}.`);
+                }
+
+                window.clearTimeout(customerOrdersRefreshTimer);
+                customerOrdersRefreshTimer = window.setTimeout(() => {
+                    loadCustomerOrders().catch((error) => {
+                        console.error("Could not refresh customer orders:", error);
+                        toast(error.message);
+                    });
+                }, 100);
+            }
+        )
+        .subscribe((status) => {
+            if (status === "SUBSCRIBED") {
+                window.clearTimeout(customerOrdersRefreshTimer);
+                customerOrdersRefreshTimer = window.setTimeout(() => {
+                    loadCustomerOrders().catch((error) => {
+                        console.error("Could not refresh customer orders:", error);
+                        toast(error.message);
+                    });
+                }, 100);
+            } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+                console.error(`Customer order updates are unavailable: ${status}`);
+            }
+        });
+}
+
+function unsubscribeFromCustomerOrders() {
+    if (customerOrdersChannel && SUPABASE_CLIENT) {
+        SUPABASE_CLIENT.removeChannel(customerOrdersChannel).catch((error) => {
+            console.error("Could not close customer order updates:", error);
+        });
+    }
+
+    customerOrdersChannel = null;
+    customerOrdersUserId = null;
+    window.clearTimeout(customerOrdersRefreshTimer);
 }
 
 function showAuthMessage(message = "") {
@@ -1710,9 +1725,16 @@ function showApp() {
         ownerAdminLink.classList.toggle("hidden", S.user?.role !== "owner");
     }
     if (S.user) {
+        S.orders = [];
+        renderOrders();
+        subscribeToCustomerOrders(S.user.id);
         loadCustomerOrders().catch((error) => {
             toast(error instanceof Error ? error.message : "Could not load your orders.");
         });
+    } else {
+        unsubscribeFromCustomerOrders();
+        S.orders = [];
+        renderOrders();
     }
 
     view("home");
@@ -1937,7 +1959,9 @@ logoutBtn.addEventListener("click", async () => {
         }
     }
 
+    unsubscribeFromCustomerOrders();
     S.user = null;
+    S.orders = [];
     save();
 
     app.classList.add("hidden");

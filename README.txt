@@ -19,6 +19,7 @@ SUPABASE DATABASE SETUP
 2. Open SQL Editor and run these migrations in order:
        supabase/migrations/20261109000000_create_profiles.sql
        supabase/migrations/20261109190000_owner_admin_store_controls.sql
+       supabase/migrations/20261109193000_enable_order_realtime.sql
 3. In Authentication > URL Configuration, set the Site URL to:
        https://mae-kini.vercel.app
    Add this Redirect URL:
@@ -36,9 +37,11 @@ ADMIN ACCOUNT MONITORING
 ------------------------------------------------
 Sign in to the storefront as `angiliemaedrama@gmail.com`, open the Me tab, and
 choose "Open owner dashboard" or visit `/admin.html`. The dashboard lists
-customer profiles, manages products and visibility, updates order status, and
-edits store social links. Customer account security and deletion remain in
-Supabase Authentication > Users. No shared admin password is used.
+customer profiles, manages products and visibility, updates order status in
+real time, and edits store social links. Order status is owner-managed; customer
+alerts display the status and refresh when the owner changes it. Customer
+account security and deletion remain in Supabase Authentication > Users. No
+shared admin password is used.
 
 STORE DATA
 ------------------------------------------------

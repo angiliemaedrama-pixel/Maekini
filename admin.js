@@ -10,6 +10,7 @@ const customerRows = document.getElementById("customerRows");
 const productRows = document.getElementById("productRows");
 const orderRows = document.getElementById("orderRows");
 const ordersEmpty = document.getElementById("ordersEmpty");
+const ordersLiveStatus = document.getElementById("ordersLiveStatus");
 const productForm = document.getElementById("productForm");
 const productMessage = document.getElementById("productMessage");
 const orderMessage = document.getElementById("orderMessage");
@@ -17,6 +18,8 @@ const settingsForm = document.getElementById("settingsForm");
 const settingsMessage = document.getElementById("settingsMessage");
 
 let products = [];
+let ordersChannel = null;
+let ordersRefreshTimer = null;
 
 function escapeHtml(value) {
     return String(value ?? "").replace(/[&<>"']/g, (character) => ({
@@ -154,6 +157,33 @@ async function loadOrders() {
             </tr>
         `;
     }).join("");
+}
+
+function scheduleOrdersRefresh() {
+    window.clearTimeout(ordersRefreshTimer);
+    ordersRefreshTimer = window.setTimeout(() => {
+        loadOrders().catch((error) => {
+            setMessage(orderMessage, `Could not refresh orders: ${error.message}`, true);
+        });
+    }, 100);
+}
+
+function subscribeToOrders() {
+    ordersChannel = client
+        .channel("owner-store-orders")
+        .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "store_orders" },
+            scheduleOrdersRefresh
+        )
+        .subscribe((status) => {
+            if (status === "SUBSCRIBED") {
+                ordersLiveStatus.textContent = "Live order updates connected.";
+                scheduleOrdersRefresh();
+            } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+                ordersLiveStatus.textContent = `Live order updates unavailable (${status}). Refresh the page to reconnect.`;
+            }
+        });
 }
 
 async function loadSettings() {
@@ -345,6 +375,7 @@ async function initAdmin() {
         statusMessage.textContent = `Signed in as ${data.session.user.email}`;
         await Promise.all([loadCustomers(), loadProducts(), loadOrders(), loadSettings()]);
         dashboard.hidden = false;
+        subscribeToOrders();
     } catch (error) {
         statusMessage.textContent = `Could not load the dashboard: ${error.message}`;
     }

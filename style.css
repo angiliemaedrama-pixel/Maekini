@@ -400,6 +400,11 @@ main {
     gap:6px;
     margin-top:14px;
 }
+.orderStatusHelp {
+    margin-bottom:0;
+    color:var(--muted);
+    font-size:12px;
+}
 .step {
     border-top:4px solid #d5cec8;
     padding-top:7px;
@@ -409,9 +414,6 @@ main {
 .step.done {
     border-color:#a94661;
     color:#282522;
-}
-.orderActions button {
-    margin:10px 6px 0 0;
 }
 .review .stars {
     color:#f2b51d;
