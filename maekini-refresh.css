@@ -847,6 +847,14 @@ nav button.active .nav-icon {
     gap: 20px;
 }
 
+.adminPage #adminDashboard > .owner-tools-nav,
+.adminPage #adminDashboard > .owner-overview,
+.adminPage #adminDashboard > .adminSection,
+.adminPage #adminDashboard > .adminSection:nth-of-type(2),
+.adminPage #adminDashboard > .adminSection:nth-of-type(3) {
+    grid-column: 1 / -1;
+}
+
 #adminDashboard[hidden] {
     display: none;
 }
