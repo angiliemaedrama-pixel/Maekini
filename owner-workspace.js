@@ -52,7 +52,7 @@
         const searchLabel = document.createElement("label");
         searchLabel.className = "ownerSectionSearch";
         searchLabel.innerHTML = `
-            <span aria-hidden="true">?</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
             <input type="search" aria-label="${label}" placeholder="${placeholder}" autocomplete="off">`;
         heading.append(searchLabel);
 

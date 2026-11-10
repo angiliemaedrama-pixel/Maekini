@@ -21,11 +21,15 @@
             </label>
             <label class="collection-price"><span>Max price</span>
                 <input id="shopPrice" type="range" min="0" max="0" value="0" aria-label="Maximum product price">
-                <output id="shopPriceValue" for="shopPrice">?0</output>
+                <output id="shopPriceValue" for="shopPrice">PHP 0</output>
             </label>
             <div class="collection-layout" role="group" aria-label="Product layout">
-                <button type="button" data-layout="grid" aria-label="Grid view" aria-pressed="true">?</button>
-                <button type="button" data-layout="list" aria-label="List view" aria-pressed="false">?</button>
+                <button type="button" data-layout="grid" aria-label="Grid view" aria-pressed="true">
+                    <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="12" y="3" width="5" height="5" rx="1"/><rect x="3" y="12" width="5" height="5" rx="1"/><rect x="12" y="12" width="5" height="5" rx="1"/></svg>
+                </button>
+                <button type="button" data-layout="list" aria-label="List view" aria-pressed="false">
+                    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 5h10M7 10h10M7 15h10"/><circle cx="3.5" cy="5" r=".7"/><circle cx="3.5" cy="10" r=".7"/><circle cx="3.5" cy="15" r=".7"/></svg>
+                </button>
             </div>`;
         grid.before(controls);
     }
@@ -73,16 +77,16 @@
             grid.append(card);
         });
         grid.classList.toggle("list-layout", layout === "list");
-        priceOutput.value = `?${Number(priceRange.value).toLocaleString("en-PH")}`;
+        priceOutput.value = `PHP ${Number(priceRange.value).toLocaleString("en-PH")}`;
         priceOutput.textContent = priceOutput.value;
 
         const searchSummary = document.getElementById("searchText");
         if (searchSummary) {
             const visibleCount = orderedCards.filter((card) => !card.hidden).length;
             const filterSummary = priceLimit < maximumPrice
-                ? ` ? ${visibleCount} within budget`
+                ? ` | ${visibleCount} within budget`
                 : "";
-            searchSummary.textContent = searchSummary.textContent.replace(/ ? \d+ within budget$/, "") + filterSummary;
+            searchSummary.textContent = searchSummary.textContent.replace(/ \| \d+ within budget$/, "") + filterSummary;
         }
     }
 

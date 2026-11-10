@@ -1258,8 +1258,19 @@ nav button.active .nav-icon {
     box-shadow: 0 0 0 4px rgba(224, 105, 173, .1);
 }
 
-.ownerSectionSearch span {
-    font-size: 18px;
+.ownerSectionSearch svg {
+    display: block;
+    width: 17px;
+    height: 17px;
+    flex: 0 0 auto;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-width: 1.8;
+}
+
+.collection-price output {
+    min-width: 72px;
 }
 
 .ownerSectionSearch input {
