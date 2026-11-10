@@ -1371,6 +1371,68 @@ nav button.active .nav-icon {
     }
 }
 
+.hero > div:first-child > span {
+    color: #a82f70;
+}
+
+.hero h2 {
+    color: #47223f;
+}
+
+.hero p {
+    color: #6f506b;
+}
+
+#app > .store-topbar {
+    position: sticky;
+    z-index: 20;
+    top: 0;
+    padding-bottom: 12px;
+    background: rgba(255, 249, 252, .94);
+    box-shadow: 0 12px 28px rgba(77, 29, 59, .06);
+    backdrop-filter: blur(18px);
+}
+
+#app > .store-topbar > header {
+    position: relative;
+    top: auto;
+    z-index: auto;
+}
+
+#app > .store-topbar > nav {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    width: max-content;
+    max-width: calc(100% - 32px);
+    margin: 12px auto 0;
+    transform: none;
+}
+
+main {
+    padding-bottom: 42px;
+}
+
+@media (max-width: 760px) {
+    #app > .store-topbar {
+        padding-bottom: 9px;
+    }
+
+    #app > .store-topbar > nav {
+        width: min(520px, calc(100% - 24px));
+        max-width: none;
+        gap: 2px;
+        padding: 6px;
+    }
+
+    #app > .store-topbar > nav button {
+        min-width: 0;
+        flex: 1 1 0;
+        padding-right: 2px;
+        padding-left: 2px;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .auth-visual::before,
     .auth-orbit-two {
