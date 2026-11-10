@@ -20,6 +20,7 @@ const settingsMessage = document.getElementById("settingsMessage");
 let products = [];
 let ordersChannel = null;
 let ordersRefreshTimer = null;
+let orderRequestsAvailable = true;
 
 function escapeHtml(value) {
     return String(value ?? "").replace(/[&<>"']/g, (character) => ({
@@ -35,6 +36,12 @@ function setMessage(element, message, isError = false) {
     element.textContent = message;
     element.classList.toggle("errorText", isError);
     element.classList.toggle("successText", !isError && Boolean(message));
+}
+
+function isMissingOrderRequestsTable(error) {
+    const message = String(error?.message || "");
+    return /store_order_requests/i.test(message)
+        && (error?.code === "PGRST205" || /schema cache|does not exist|not found/i.test(message));
 }
 
 function formatPrice(value) {
@@ -133,16 +140,23 @@ async function loadOrders() {
         throw error;
     }
 
-    const { data: requests, error: requestsError } = data.length
-        ? await client
+    let requests = [];
+    if (data.length) {
+        const { data: requestData, error: requestsError } = await client
             .from("store_order_requests")
             .select("id, order_id, request_type, item_name, quantity, reason, status, created_at")
             .in("order_id", data.map((order) => order.id))
-            .order("created_at", { ascending: false })
-        : { data: [], error: null };
+            .order("created_at", { ascending: false });
 
-    if (requestsError) {
-        throw requestsError;
+        if (requestsError && !isMissingOrderRequestsTable(requestsError)) {
+            throw requestsError;
+        }
+        orderRequestsAvailable = !requestsError;
+        requests = requestData || [];
+    }
+
+    if (!orderRequestsAvailable) {
+        setMessage(orderMessage, "Orders are available, but return/refund requests need 20261109202300_customer_order_actions.sql applied in Supabase.", true);
     }
 
     ordersEmpty.hidden = data.length > 0;
@@ -152,8 +166,10 @@ async function loadOrders() {
             .join("<br>");
         const statuses = ["Preparing for Ship", "In Transit", "Delivered", "Cancelled"];
         const orderRequests = requests.filter((request) => request.order_id === order.id);
-        const requestSummary = orderRequests.length
-            ? orderRequests.map((request) => `
+        const requestSummary = !orderRequestsAvailable
+            ? "Return/refund requests unavailable until 20261109202300_customer_order_actions.sql is applied."
+            : orderRequests.length
+                ? orderRequests.map((request) => `
                 <div class="adminOrderRequest">
                     <b>${escapeHtml(request.request_type)} · ${escapeHtml(request.status)}</b>
                     <p>Item: ${escapeHtml(request.item_name)} × ${Number(request.quantity) || 0}</p>
@@ -166,8 +182,8 @@ async function loadOrders() {
                         </div>
                     ` : ""}
                 </div>
-            `).join("")
-            : "No requests";
+                `).join("")
+                : "No requests";
         return `
             <tr>
                 <td>${escapeHtml(order.order_number)}<br><small>${escapeHtml(new Date(order.created_at).toLocaleString())}</small></td>
@@ -199,21 +215,25 @@ function scheduleOrdersRefresh() {
 }
 
 function subscribeToOrders() {
-    ordersChannel = client
+    let channel = client
         .channel("owner-store-orders")
         .on(
             "postgres_changes",
             { event: "*", schema: "public", table: "store_orders" },
             scheduleOrdersRefresh
-        )
-        .on(
+        );
+    if (orderRequestsAvailable) {
+        channel = channel.on(
             "postgres_changes",
             { event: "*", schema: "public", table: "store_order_requests" },
             scheduleOrdersRefresh
-        )
-        .subscribe((status) => {
+        );
+    }
+    ordersChannel = channel.subscribe((status) => {
             if (status === "SUBSCRIBED") {
-                ordersLiveStatus.textContent = "Live order updates connected.";
+                ordersLiveStatus.textContent = orderRequestsAvailable
+                    ? "Live order updates connected."
+                    : "Live order updates connected. Return/refund requests need 20261109202300_customer_order_actions.sql.";
                 scheduleOrdersRefresh();
             } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
                 ordersLiveStatus.textContent = `Live order updates unavailable (${status}). Refresh the page to reconnect.`;
