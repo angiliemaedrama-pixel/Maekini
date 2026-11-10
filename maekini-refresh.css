@@ -1405,8 +1405,33 @@ nav button.active .nav-icon {
     bottom: auto;
     width: max-content;
     max-width: calc(100% - 32px);
-    margin: 12px auto 0;
+    gap: 3px;
+    margin: 8px auto 0;
+    padding: 5px;
+    border-radius: 17px;
     transform: none;
+}
+
+#app > .store-topbar > nav button {
+    min-width: 68px;
+    min-height: 48px;
+    gap: 2px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+}
+
+#app > .store-topbar > nav .nav-icon {
+    width: 16px;
+    height: 16px;
+}
+
+#app > .store-topbar > nav button b {
+    min-width: 17px;
+    height: 17px;
+    margin-left: 1px;
+    padding: 0 3px;
+    font-size: 9px;
 }
 
 main {
@@ -1419,17 +1444,17 @@ main {
     }
 
     #app > .store-topbar > nav {
-        width: min(520px, calc(100% - 24px));
+        width: min(440px, calc(100% - 24px));
         max-width: none;
         gap: 2px;
-        padding: 6px;
+        padding: 4px;
     }
 
     #app > .store-topbar > nav button {
         min-width: 0;
+        min-height: 46px;
         flex: 1 1 0;
-        padding-right: 2px;
-        padding-left: 2px;
+        padding: 3px 2px;
     }
 }
 
