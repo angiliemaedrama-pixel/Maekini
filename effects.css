@@ -13,9 +13,9 @@ body {
 
 #intro {
     background:
-        radial-gradient(ellipse at 78% 24%,#d484b477 0,transparent 38%),
-        radial-gradient(ellipse at 22% 78%,#9f82d366 0,transparent 42%),
-        linear-gradient(145deg,#482f50c9 8%,#70445fc4 54%,#a75270c9 140%);
+        radial-gradient(ellipse at 68% 32%,#f443a74d 0,transparent 38%),
+        radial-gradient(ellipse at 18% 82%,#81317854 0,transparent 40%),
+        linear-gradient(145deg,#180e20 8%,#32152f 58%,#682448 140%);
 }
 
 .auth {

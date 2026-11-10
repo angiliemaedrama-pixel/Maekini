@@ -2,7 +2,7 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.m
 
 // Tune the palette, count, and drift here. Three.js is loaded during browser idle time.
 const FLOATING_CONFIG = Object.freeze({
-    colors: ["#f3a9c5", "#c8b3ee", "#ffc9b5", "#a9d8ef", "#fff0c7"],
+    colors: ["#f35aae", "#d68acb", "#ff9cce", "#bd8dea", "#ffe4f2"],
     desktopCount: 32,
     mobileCount: 12,
     driftSpeed: 0.24,
