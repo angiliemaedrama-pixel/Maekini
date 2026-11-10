@@ -126,9 +126,12 @@ body::before {
     backdrop-filter: blur(18px);
 }
 
-#app > header {
-    position: sticky;
-    top: 0;
+#app > .store-topbar > header {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(180px, 1fr) max-content auto;
+    gap: clamp(8px, 1.4vw, 20px);
+    align-items: center;
     z-index: 15;
     border: 1px solid rgba(255, 255, 255, .8);
     border-radius: 0 0 24px 24px;
@@ -139,9 +142,20 @@ body::before {
 
 .brand {
     font-family: var(--font-display);
-    font-size: clamp(20px, 2.2vw, 27px);
+    font-size: clamp(18px, 2vw, 25px);
     font-weight: 800;
     letter-spacing: -.07em;
+}
+
+#app > .store-topbar > header > .brand,
+#app > .store-topbar > header > .search,
+#app > .store-topbar > header > nav,
+#app > .store-topbar > header > .headActions {
+    min-width: 0;
+}
+
+#app > .store-topbar > header > .search {
+    width: 100%;
 }
 
 .search {
@@ -1395,43 +1409,61 @@ nav button.active .nav-icon {
 
 #app > .store-topbar > header {
     position: relative;
-    top: auto;
     z-index: auto;
 }
 
-#app > .store-topbar > nav {
+#app > .store-topbar > header > nav {
     position: relative;
-    right: auto;
-    bottom: auto;
+    inset: auto;
+    display: flex;
     width: max-content;
-    max-width: calc(100% - 32px);
-    gap: 3px;
-    margin: 8px auto 0;
-    padding: 5px;
-    border-radius: 17px;
+    max-width: none;
+    grid-template-columns: none;
+    gap: 2px;
+    margin: 0;
+    padding: 4px;
+    border: 1px solid rgba(255, 255, 255, .72);
+    border-radius: 15px;
+    background: rgba(255, 255, 255, .72);
+    box-shadow: 0 6px 18px rgba(77, 29, 59, .06);
     transform: none;
 }
 
-#app > .store-topbar > nav button {
-    min-width: 68px;
-    min-height: 48px;
+#app > .store-topbar > header > nav button {
+    display: flex;
+    min-width: 48px;
+    min-height: 44px;
+    flex: 1 1 auto;
+    flex-direction: column;
+    justify-content: center;
     gap: 2px;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 10px;
-}
-
-#app > .store-topbar > nav .nav-icon {
-    width: 16px;
-    height: 16px;
-}
-
-#app > .store-topbar > nav button b {
-    min-width: 17px;
-    height: 17px;
-    margin-left: 1px;
-    padding: 0 3px;
+    padding: 3px 7px;
+    border-radius: 10px;
+    color: #806378;
     font-size: 9px;
+}
+
+#app > .store-topbar > header > nav button.active {
+    background: linear-gradient(140deg, rgba(242, 105, 178, .2), rgba(207, 48, 134, .08));
+    color: #a82f70;
+}
+
+#app > .store-topbar > header > nav .nav-icon {
+    width: 15px;
+    height: 15px;
+}
+
+#app > .store-topbar > header > nav button.active .nav-icon {
+    color: #d82c89;
+    filter: none;
+}
+
+#app > .store-topbar > header > nav button b {
+    min-width: 15px;
+    height: 15px;
+    margin: 0;
+    padding: 0 3px;
+    font-size: 8px;
 }
 
 main {
@@ -1440,21 +1472,110 @@ main {
 
 @media (max-width: 760px) {
     #app > .store-topbar {
-        padding-bottom: 9px;
+        padding-bottom: 0;
     }
 
-    #app > .store-topbar > nav {
-        width: min(440px, calc(100% - 24px));
-        max-width: none;
-        gap: 2px;
-        padding: 4px;
+    #app > .store-topbar > header {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px 10px;
+        padding: 10px 16px;
+        border-radius: 0 0 18px 18px;
     }
 
-    #app > .store-topbar > nav button {
+    #app > .store-topbar > header > .search {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+
+    #app > .store-topbar > header > nav {
+        grid-column: 1 / -1;
+        grid-row: 3;
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    #app > .store-topbar > header > nav button {
         min-width: 0;
-        min-height: 46px;
+        min-height: 40px;
         flex: 1 1 0;
-        padding: 3px 2px;
+        padding: 2px;
+    }
+
+    #app > .store-topbar > header > .headActions {
+        grid-column: 2;
+        grid-row: 1;
+        gap: 5px;
+    }
+
+    #app > .store-topbar > header > .headActions button {
+        padding: 7px 9px;
+        font-size: 10px;
+    }
+
+    #app > .store-topbar > header > .headActions button > span {
+        display: none;
+    }
+
+    #app > .store-topbar > header > .search input {
+        min-height: 40px;
+    }
+}
+
+@media (min-width: 581px) and (max-width: 760px) {
+    #app > .store-topbar > header {
+        grid-template-columns: minmax(140px, 1fr) max-content max-content;
+    }
+
+    #app > .store-topbar > header > .brand {
+        grid-column: 1 / -1;
+        grid-row: 1;
+    }
+
+    #app > .store-topbar > header > .search {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    #app > .store-topbar > header > nav {
+        grid-column: 2;
+        grid-row: 2;
+        width: max-content;
+    }
+
+    #app > .store-topbar > header > nav button {
+        min-width: 42px;
+        padding-right: 4px;
+        padding-left: 4px;
+    }
+
+    #app > .store-topbar > header > .headActions {
+        grid-column: 3;
+        grid-row: 2;
+    }
+}
+
+@media (min-width: 761px) and (max-width: 1120px) {
+    #app > .store-topbar > header {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: 8px 14px;
+        padding: 10px 24px;
+    }
+
+    #app > .store-topbar > header > .search {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    #app > .store-topbar > header > .headActions {
+        grid-column: 3;
+        grid-row: 1;
+    }
+
+    #app > .store-topbar > header > nav {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        width: min(440px, 100%);
+        justify-self: center;
     }
 }
 
