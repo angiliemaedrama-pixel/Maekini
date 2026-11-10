@@ -105,8 +105,14 @@
             </div>
 
             <div class="headActions">
-                <button class="favorite-shortcut" data-view="favorites" aria-label="Open favorites">? <span>Saved</span> <b id="favCount">0</b></button>
-                <button class="cart-shortcut" data-view="cart" aria-label="Open shopping bag">? <span>Bag</span> <b id="cartCount">0</b></button>
+                <button class="favorite-shortcut" data-view="favorites" aria-label="Open favorites">
+                    <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 8.7c0 5.2-8.8 11-8.8 11s-8.8-5.8-8.8-11a4.7 4.7 0 0 1 8.8-2.1 4.7 4.7 0 0 1 8.8 2.1Z"/></svg>
+                    <span>Saved</span> <b id="favCount">0</b>
+                </button>
+                <button class="cart-shortcut" data-view="cart" aria-label="Open shopping bag">
+                    <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg>
+                    <span>Bag</span> <b id="cartCount">0</b>
+                </button>
             </div>
         </header>
 
@@ -205,8 +211,12 @@
                         <output id="shopPriceValue" for="shopPrice">?0</output>
                     </label>
                     <div class="collection-layout" role="group" aria-label="Product layout">
-                        <button type="button" data-layout="grid" aria-label="Grid view" aria-pressed="true">?</button>
-                        <button type="button" data-layout="list" aria-label="List view" aria-pressed="false">?</button>
+                        <button type="button" data-layout="grid" aria-label="Grid view" aria-pressed="true">
+                            <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="12" y="3" width="5" height="5" rx="1"/><rect x="3" y="12" width="5" height="5" rx="1"/><rect x="12" y="12" width="5" height="5" rx="1"/></svg>
+                        </button>
+                        <button type="button" data-layout="list" aria-label="List view" aria-pressed="false">
+                            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 5h10M7 10h10M7 15h10"/><circle cx="3.5" cy="5" r=".7"/><circle cx="3.5" cy="10" r=".7"/><circle cx="3.5" cy="15" r=".7"/></svg>
+                        </button>
                     </div>
                 </div>
 
@@ -349,11 +359,11 @@
         </main>
 
         <nav>
-            <button data-view="home" class="active">Home</button>
-            <button data-view="shop">Shop</button>
-            <button data-view="cart">Cart <b id="navCart">0</b></button>
-            <button data-view="alerts">Alerts</button>
-            <button data-view="me">Me</button>
+            <button data-view="home" class="active"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10 8.5-7 8.5 7"/><path d="M5.5 9v11h13V9M9.5 20v-6h5v6"/></svg>Home</button>
+            <button data-view="shop"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16l-1 11H5L4 9Z"/><path d="m7 9 2-5h6l2 5M9 13h6"/></svg>Shop</button>
+            <button data-view="cart"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.3 12h11.5L21 8H6"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>Cart <b id="navCart">0</b></button>
+            <button data-view="alerts"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4"/></svg>Alerts</button>
+            <button data-view="me"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></svg>Me</button>
         </nav>
     </div>
 
